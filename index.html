@@ -1,0 +1,3712 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WMS PRO – Sistema Inteligente de Controle de Estoque</title>
+    <meta
+      name="description"
+      content="Sistema web funcional de gerenciamento de armazém (WMS) com controle de 150 posições, recebimento, expedição, mapa visual e indicadores operacionais."
+    />
+    <meta property="og:title" content="WMS PRO – Sistema Inteligente de Controle de Estoque" />
+    <meta
+      property="og:description"
+      content="Sistema web funcional de gerenciamento de armazém (WMS) com controle de 150 posições, recebimento, expedição, mapa visual e indicadores operacionais."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --navy-950: #091326;
+        --navy-900: #0f1f3d;
+        --navy-800: #172e59;
+        --navy-700: #1e3a8a;
+        --accent-600: #2563eb;
+        --accent-700: #1d4ed8;
+        --bg-canvas: #f4f6f9;
+        --bg-surface: #ffffff;
+        --bg-subtle: #f8fafc;
+        --border-subtle: #e2e8f0;
+        --border-strong: #cbd5e1;
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --text-muted: #64748b;
+
+        --status-livre-bg: #dcfce7;
+        --status-livre-border: #86efac;
+        --status-livre-text: #15803d;
+        --status-livre-solid: #16a34a;
+
+        --status-ocupada-bg: #fee2e2;
+        --status-ocupada-border: #fca5a5;
+        --status-ocupada-text: #b91c1c;
+        --status-ocupada-solid: #dc2626;
+
+        --status-indisponivel-bg: #fef3c7;
+        --status-indisponivel-border: #fcd34d;
+        --status-indisponivel-text: #b45309;
+        --status-indisponivel-solid: #d97706;
+
+        --sidebar-width: 264px;
+        --header-height: 64px;
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 10px;
+        --font-sans: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        --font-mono: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+        --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: var(--font-sans);
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--text-primary);
+        background-color: var(--bg-canvas);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+        font-size: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible,
+      textarea:focus-visible,
+      a:focus-visible {
+        outline: 2px solid var(--accent-600);
+        outline-offset: 2px;
+      }
+
+      .mono {
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .tabular {
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* App Shell */
+      .app-shell {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: var(--sidebar-width);
+        background-color: var(--navy-900);
+        color: #e2e8f0;
+        display: flex;
+        flex-direction: column;
+        z-index: 40;
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        transition: transform 200ms var(--ease-out);
+      }
+
+      .sidebar-brand {
+        height: var(--header-height);
+        padding: 0 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        flex-shrink: 0;
+      }
+
+      .brand-lockup {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 17px;
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+      }
+
+      .brand-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        background-color: var(--accent-600);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .sidebar-close-btn {
+        display: none;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        color: #e2e8f0;
+        border-radius: var(--radius-sm);
+        width: 34px;
+        height: 34px;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .sidebar-nav {
+        flex: 1;
+        padding: 16px 12px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .nav-section-label {
+        padding: 8px 12px 6px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: #94a3b8;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 42px;
+        padding: 9px 12px;
+        border: none;
+        border-radius: var(--radius-md);
+        background: transparent;
+        color: #cbd5e1;
+        font-size: 13.5px;
+        font-weight: 500;
+        text-align: left;
+        white-space: nowrap;
+        transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out);
+      }
+
+      .nav-item svg {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        opacity: 0.85;
+      }
+
+      .nav-item:hover {
+        background-color: rgba(255, 255, 255, 0.07);
+        color: #ffffff;
+      }
+
+      .nav-item.active {
+        background-color: var(--accent-600);
+        color: #ffffff;
+        font-weight: 600;
+      }
+
+      .nav-item.active svg {
+        opacity: 1;
+      }
+
+      .sidebar-footer {
+        padding: 14px 12px 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .sidebar-meta {
+        padding: 0 8px 4px;
+        font-size: 11.5px;
+        color: #94a3b8;
+        line-height: 1.45;
+      }
+
+      .btn-sidebar-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        min-height: 38px;
+        padding: 8px 12px;
+        border-radius: var(--radius-md);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background-color: rgba(255, 255, 255, 0.04);
+        color: #e2e8f0;
+        font-size: 12.5px;
+        font-weight: 500;
+        white-space: nowrap;
+        transition: background-color 150ms var(--ease-out);
+      }
+
+      .btn-sidebar-secondary:hover {
+        background-color: rgba(255, 255, 255, 0.12);
+        color: #ffffff;
+      }
+
+      /* Mobile backdrop */
+      .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(9, 19, 38, 0.52);
+        z-index: 35;
+      }
+
+      /* Main Content Area */
+      .main-wrapper {
+        flex: 1;
+        margin-left: var(--sidebar-width);
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+
+      .top-header {
+        position: sticky;
+        top: 0;
+        z-index: 25;
+        height: var(--header-height);
+        background-color: var(--bg-surface);
+        border-bottom: 1px solid var(--border-subtle);
+        padding: 0 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .mobile-menu-btn {
+        display: none;
+        width: 40px;
+        height: 40px;
+        border: 1px solid var(--border-subtle);
+        background-color: var(--bg-surface);
+        color: var(--text-primary);
+        border-radius: var(--radius-md);
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .breadcrumb-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+
+      .breadcrumb-system {
+        font-weight: 600;
+        color: var(--navy-900);
+        white-space: nowrap;
+      }
+
+      .breadcrumb-current {
+        font-weight: 600;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 40px;
+        padding: 8px 16px;
+        border-radius: var(--radius-md);
+        font-size: 13.5px;
+        font-weight: 600;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), color 150ms var(--ease-out);
+      }
+
+      .btn svg {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+      }
+
+      .btn-primary {
+        background-color: var(--navy-800);
+        color: #ffffff;
+      }
+
+      .btn-primary:hover {
+        background-color: var(--navy-900);
+      }
+
+      .btn-accent {
+        background-color: var(--accent-600);
+        color: #ffffff;
+      }
+
+      .btn-accent:hover {
+        background-color: var(--accent-700);
+      }
+
+      .btn-secondary {
+        background-color: var(--bg-surface);
+        color: var(--text-primary);
+        border-color: var(--border-strong);
+      }
+
+      .btn-secondary:hover {
+        background-color: var(--bg-subtle);
+      }
+
+      .btn-danger {
+        background-color: var(--status-ocupada-solid);
+        color: #ffffff;
+      }
+
+      .btn-danger:hover {
+        background-color: #b91c1c;
+      }
+
+      .btn-sm {
+        min-height: 32px;
+        padding: 5px 11px;
+        font-size: 12.5px;
+      }
+
+      .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      /* Main Container */
+      .main-content {
+        padding: 24px 28px 40px;
+        max-width: 1440px;
+        width: 100%;
+        margin: 0 auto;
+      }
+
+      .page-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .page-title {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--navy-900);
+        text-wrap: balance;
+      }
+
+      .page-subtitle {
+        margin: 4px 0 0;
+        font-size: 13.5px;
+        color: var(--text-secondary);
+      }
+
+      /* Alert / Notification Banner */
+      .feedback-stack {
+        margin-bottom: 20px;
+      }
+
+      .alert-banner {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 13px 16px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-subtle);
+        background-color: var(--bg-surface);
+        font-size: 13.5px;
+        font-weight: 500;
+        animation: fadeIn 180ms var(--ease-out);
+      }
+
+      .alert-banner.success {
+        background-color: #f0fdf4;
+        border-color: var(--status-livre-border);
+        color: #166534;
+      }
+
+      .alert-banner.error {
+        background-color: #fef2f2;
+        border-color: var(--status-ocupada-border);
+        color: #991b1b;
+      }
+
+      .alert-banner.warning {
+        background-color: #fffbeb;
+        border-color: var(--status-indisponivel-border);
+        color: #92400e;
+      }
+
+      .alert-body {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .alert-body svg {
+        width: 18px;
+        height: 18px;
+        margin-top: 1px;
+        flex-shrink: 0;
+      }
+
+      .alert-close {
+        background: transparent;
+        border: none;
+        color: inherit;
+        opacity: 0.7;
+        padding: 2px;
+        display: inline-flex;
+      }
+
+      .alert-close:hover {
+        opacity: 1;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Views */
+      .view-section {
+        display: none;
+      }
+
+      .view-section.active {
+        display: block;
+      }
+
+      /* Cards (Single elevation, 1px border, no nested cards) */
+      .card {
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+      }
+
+      .card-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 14px;
+        margin-bottom: 16px;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .card-title {
+        margin: 0;
+        font-size: 15.5px;
+        font-weight: 700;
+        color: var(--navy-900);
+      }
+
+      .card-desc {
+        margin: 2px 0 0;
+        font-size: 12.5px;
+        color: var(--text-muted);
+      }
+
+      /* KPI Grid */
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .kpi-grid-secondary {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .kpi-card {
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: 18px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .kpi-label {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .kpi-value {
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+        color: var(--navy-900);
+      }
+
+      .kpi-foot {
+        font-size: 12px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .kpi-value.livre {
+        color: var(--status-livre-text);
+      }
+
+      .kpi-value.ocupada {
+        color: var(--status-ocupada-text);
+      }
+
+      .kpi-value.indisponivel {
+        color: var(--status-indisponivel-text);
+      }
+
+      .progress-track {
+        width: 100%;
+        height: 6px;
+        background-color: #e2e8f0;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-top: 2px;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background-color: var(--accent-600);
+        border-radius: 3px;
+        transition: width 220ms var(--ease-out);
+      }
+
+      /* Dashboard Charts Grid */
+      .charts-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+        gap: 20px;
+        margin-bottom: 24px;
+      }
+
+      .chart-canvas-wrap {
+        position: relative;
+        width: 100%;
+        height: 280px;
+      }
+
+      .chart-canvas-wrap canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .chart-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border-subtle);
+        font-size: 12.5px;
+        color: var(--text-secondary);
+      }
+
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .legend-swatch {
+        width: 11px;
+        height: 11px;
+        border-radius: 2px;
+        flex-shrink: 0;
+      }
+
+      /* Forms & 2-Column Workspace */
+      .workspace-split {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+        gap: 20px;
+        align-items: start;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .form-group.full {
+        grid-column: 1 / -1;
+      }
+
+      .form-label {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .form-hint {
+        font-size: 11.5px;
+        color: var(--text-muted);
+      }
+
+      .form-control {
+        width: 100%;
+        min-height: 40px;
+        padding: 8px 12px;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-md);
+        background-color: var(--bg-surface);
+        color: var(--text-primary);
+        font-size: 13.5px;
+        transition: border-color 140ms var(--ease-out);
+      }
+
+      .form-control:hover {
+        border-color: #94a3b8;
+      }
+
+      .form-control:focus {
+        border-color: var(--accent-600);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+      }
+
+      .form-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border-subtle);
+      }
+
+      .inline-check {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12.5px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        user-select: none;
+      }
+
+      /* Filter & Search Bar */
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .toolbar-group {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .search-box {
+        position: relative;
+        min-width: 260px;
+        flex: 1;
+        max-width: 420px;
+      }
+
+      .search-box svg {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 16px;
+        height: 16px;
+        color: var(--text-muted);
+        pointer-events: none;
+      }
+
+      .search-box input {
+        padding-left: 36px;
+      }
+
+      .segmented-control {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        padding: 3px;
+        background-color: #e2e8f0;
+        border-radius: var(--radius-md);
+      }
+
+      .seg-btn {
+        border: none;
+        background: transparent;
+        color: var(--text-secondary);
+        font-size: 12.5px;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 6px;
+        white-space: nowrap;
+        transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out);
+      }
+
+      .seg-btn:hover {
+        color: var(--text-primary);
+      }
+
+      .seg-btn.active {
+        background-color: var(--bg-surface);
+        color: var(--navy-900);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+      }
+
+      /* Tables */
+      .table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 13px;
+      }
+
+      thead th {
+        background-color: var(--bg-subtle);
+        color: var(--text-secondary);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border-subtle);
+        white-space: nowrap;
+      }
+
+      tbody td {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border-subtle);
+        color: var(--text-primary);
+        vertical-align: middle;
+      }
+
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      tbody tr:hover {
+        background-color: #f8fafc;
+      }
+
+      .text-right {
+        text-align: right;
+      }
+
+      /* Status indicator text (explicit label + subtle rectangle, never pill) */
+      .status-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid transparent;
+        white-space: nowrap;
+      }
+
+      .status-tag.livre {
+        background-color: var(--status-livre-bg);
+        border-color: var(--status-livre-border);
+        color: var(--status-livre-text);
+      }
+
+      .status-tag.ocupada {
+        background-color: var(--status-ocupada-bg);
+        border-color: var(--status-ocupada-border);
+        color: var(--status-ocupada-text);
+      }
+
+      .status-tag.indisponivel {
+        background-color: var(--status-indisponivel-bg);
+        border-color: var(--status-indisponivel-border);
+        color: var(--status-indisponivel-text);
+      }
+
+      .op-type {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11.5px;
+        font-weight: 600;
+        border: 1px solid transparent;
+        white-space: nowrap;
+      }
+
+      .op-type.ENTRADA {
+        background-color: #eff6ff;
+        border-color: #bfdbfe;
+        color: #1d4ed8;
+      }
+
+      .op-type.SAIDA {
+        background-color: #fef2f2;
+        border-color: #fecaca;
+        color: #b91c1c;
+      }
+
+      .op-type.BLOQUEIO {
+        background-color: #fffbeb;
+        border-color: #fde68a;
+        color: #b45309;
+      }
+
+      .op-type.REATIVACAO {
+        background-color: #f0fdf4;
+        border-color: #bbf7d0;
+        color: #15803d;
+      }
+
+      /* Warehouse Map */
+      .map-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 20px;
+        align-items: start;
+      }
+
+      .streets-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .street-card {
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: 16px;
+      }
+
+      .street-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .street-title {
+        margin: 0;
+        font-size: 14.5px;
+        font-weight: 700;
+        color: var(--navy-900);
+      }
+
+      .street-summary {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .modules-row {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .module-col {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .module-label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-align: center;
+        padding-bottom: 2px;
+      }
+
+      .pos-cell {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 4px 2px;
+        border-radius: 5px;
+        border: 1px solid transparent;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1.15;
+        transition: transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out), opacity 150ms var(--ease-out);
+      }
+
+      .pos-cell:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+        z-index: 2;
+      }
+
+      .pos-cell.selected {
+        outline: 2px solid var(--navy-900);
+        outline-offset: 1px;
+        z-index: 3;
+      }
+
+      .pos-cell.dimmed {
+        opacity: 0.25;
+      }
+
+      .pos-cell.livre {
+        background-color: var(--status-livre-bg);
+        border-color: var(--status-livre-border);
+        color: var(--status-livre-text);
+      }
+
+      .pos-cell.ocupada {
+        background-color: var(--status-ocupada-bg);
+        border-color: var(--status-ocupada-border);
+        color: var(--status-ocupada-text);
+      }
+
+      .pos-cell.indisponivel {
+        background-color: var(--status-indisponivel-bg);
+        border-color: var(--status-indisponivel-border);
+        color: var(--status-indisponivel-text);
+      }
+
+      .pos-cell-sub {
+        font-size: 9.5px;
+        font-weight: 500;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding: 0 3px;
+        opacity: 0.9;
+      }
+
+      .inspector-panel {
+        position: sticky;
+        top: calc(var(--header-height) + 20px);
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+      }
+
+      .detail-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin: 16px 0;
+      }
+
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-subtle);
+        font-size: 13px;
+      }
+
+      .detail-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .detail-key {
+        color: var(--text-muted);
+        font-weight: 500;
+        flex-shrink: 0;
+      }
+
+      .detail-val {
+        color: var(--text-primary);
+        font-weight: 600;
+        text-align: right;
+        word-break: break-word;
+      }
+
+      /* Selection List in Expedicao */
+      .dispatch-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 460px;
+        overflow-y: auto;
+      }
+
+      .dispatch-item {
+        width: 100%;
+        text-align: left;
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: 12px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        transition: border-color 140ms var(--ease-out), background-color 140ms var(--ease-out);
+      }
+
+      .dispatch-item:hover {
+        border-color: var(--accent-600);
+        background-color: var(--bg-subtle);
+      }
+
+      .dispatch-item.active {
+        border-color: var(--accent-600);
+        background-color: #eff6ff;
+      }
+
+      .dispatch-item-main {
+        min-width: 0;
+      }
+
+      .dispatch-item-title {
+        font-weight: 600;
+        color: var(--navy-900);
+        margin-bottom: 2px;
+      }
+
+      .dispatch-item-meta {
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      .dispatch-item-qty {
+        font-family: var(--font-mono);
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--navy-900);
+        white-space: nowrap;
+      }
+
+      /* Empty State */
+      .empty-state {
+        padding: 36px 20px;
+        text-align: center;
+        color: var(--text-muted);
+      }
+
+      .empty-state-title {
+        margin: 0 0 6px;
+        font-size: 14.5px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .empty-state-desc {
+        margin: 0 0 14px;
+        font-size: 13px;
+      }
+
+      /* Modal */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(9, 19, 38, 0.56);
+        z-index: 60;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      .modal-overlay.open {
+        display: flex;
+      }
+
+      .modal-card {
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        width: 100%;
+        max-width: 440px;
+        padding: 22px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.22);
+      }
+
+      .modal-title {
+        margin: 0 0 8px;
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--navy-900);
+      }
+
+      .modal-text {
+        margin: 0 0 18px;
+        font-size: 13.5px;
+        color: var(--text-secondary);
+        line-height: 1.55;
+      }
+
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      /* Responsive */
+      @media (max-width: 1200px) {
+        .kpi-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .charts-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .map-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .inspector-panel {
+          position: static;
+        }
+
+        .streets-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 960px) {
+        .sidebar {
+          transform: translateX(-100%);
+        }
+
+        .sidebar.open {
+          transform: translateX(0);
+        }
+
+        .sidebar-close-btn {
+          display: inline-flex;
+        }
+
+        .sidebar-backdrop.open {
+          display: block;
+        }
+
+        .main-wrapper {
+          margin-left: 0;
+        }
+
+        .mobile-menu-btn {
+          display: inline-flex;
+        }
+
+        .workspace-split {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .top-header {
+          padding: 0 16px;
+        }
+
+        .main-content {
+          padding: 18px 16px 32px;
+        }
+
+        .kpi-grid,
+        .kpi-grid-secondary,
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .header-actions .btn-text-hide-sm {
+          display: none;
+        }
+
+        .search-box {
+          min-width: 100%;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <div id="sidebar-backdrop" class="sidebar-backdrop" aria-hidden="true"></div>
+
+      <aside id="sidebar" class="sidebar" aria-label="Menu principal">
+        <div class="sidebar-brand">
+          <div class="brand-lockup">
+            <span class="brand-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                <line x1="12" y1="22.08" x2="12" y2="12" />
+              </svg>
+            </span>
+            <span>WMS PRO</span>
+          </div>
+          <button id="sidebar-close-btn" class="sidebar-close-btn" type="button" aria-label="Fechar menu">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <nav class="sidebar-nav" id="sidebar-nav">
+          <div class="nav-section-label">Operação Logística</div>
+
+          <button class="nav-item active" type="button" data-view="dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="9" rx="1" />
+              <rect x="14" y="3" width="7" height="5" rx="1" />
+              <rect x="14" y="12" width="7" height="9" rx="1" />
+              <rect x="3" y="16" width="7" height="5" rx="1" />
+            </svg>
+            <span>Visão Geral</span>
+          </button>
+
+          <button class="nav-item" type="button" data-view="mapa">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <line x1="3" y1="9" x2="21" y2="9" />
+              <line x1="3" y1="15" x2="21" y2="15" />
+              <line x1="9" y1="3" x2="9" y2="21" />
+              <line x1="15" y1="3" x2="15" y2="21" />
+            </svg>
+            <span>Mapa do Armazém</span>
+          </button>
+
+          <button class="nav-item" type="button" data-view="recebimento">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v12" />
+              <polyline points="8 11 12 15 16 11" />
+              <path d="M20 17v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2" />
+            </svg>
+            <span>Recebimento</span>
+          </button>
+
+          <button class="nav-item" type="button" data-view="expedicao">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 15V3" />
+              <polyline points="8 7 12 3 16 7" />
+              <path d="M20 17v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2" />
+            </svg>
+            <span>Expedição</span>
+          </button>
+
+          <div class="nav-section-label">Inventário e Auditoria</div>
+
+          <button class="nav-item" type="button" data-view="consulta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <span>Consulta de Estoque</span>
+          </button>
+
+          <button class="nav-item" type="button" data-view="posicoes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            <span>Controle de Posições</span>
+          </button>
+
+          <button class="nav-item" type="button" data-view="historico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <span>Histórico de Operações</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-meta">
+            6 Ruas (A–F) · 30 Módulos · 150 Posições<br />
+            Armazenamento local ativo
+          </div>
+          <button id="btn-reset-demo" class="btn-sidebar-secondary" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10" />
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+            </svg>
+            <span>Restaurar Demonstração</span>
+          </button>
+        </div>
+      </aside>
+
+      <div class="main-wrapper">
+        <header class="top-header">
+          <div class="header-left">
+            <button id="mobile-menu-btn" class="mobile-menu-btn" type="button" aria-label="Abrir menu">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+            <div class="breadcrumb-wrap">
+              <span class="breadcrumb-system">WMS PRO – Sistema Inteligente de Controle de Estoque</span>
+              <span aria-hidden="true">/</span>
+              <span id="header-breadcrumb" class="breadcrumb-current">Visão Geral</span>
+            </div>
+          </div>
+
+          <div class="header-actions">
+            <button id="header-quick-receive" class="btn btn-accent" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Novo Recebimento</span>
+            </button>
+          </div>
+        </header>
+
+        <main class="main-content">
+          <div id="feedback-container" class="feedback-stack" aria-live="polite"></div>
+
+          <!-- 1. VISÃO GERAL (DASHBOARD) -->
+          <section id="view-dashboard" class="view-section active" aria-labelledby="title-dashboard">
+            <div class="page-header">
+              <div>
+                <h1 id="title-dashboard" class="page-title">Visão Geral Operacional</h1>
+                <p class="page-subtitle">Indicadores de capacidade, ocupação das ruas e movimentação do armazém em tempo real.</p>
+              </div>
+              <button id="btn-dash-export" class="btn btn-secondary" type="button">Exportar Inventário CSV</button>
+            </div>
+
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <div class="kpi-label">Capacidade Total</div>
+                <div id="kpi-total" class="kpi-value">150</div>
+                <div class="kpi-foot">6 ruas · 30 módulos · 5 níveis</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Posições Ocupadas</div>
+                <div id="kpi-ocupadas" class="kpi-value ocupada">0</div>
+                <div id="kpi-ocupadas-sub" class="kpi-foot">0,0% da capacidade total</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Posições Livres</div>
+                <div id="kpi-livres" class="kpi-value livre">0</div>
+                <div id="kpi-livres-sub" class="kpi-foot">Disponíveis para armazenagem</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Posições Indisponíveis</div>
+                <div id="kpi-indisponiveis" class="kpi-value indisponivel">0</div>
+                <div id="kpi-indisponiveis-sub" class="kpi-foot">Bloqueadas ou em manutenção</div>
+              </div>
+            </div>
+
+            <div class="kpi-grid-secondary">
+              <div class="kpi-card">
+                <div class="kpi-label">Percentual de Ocupação</div>
+                <div id="kpi-percentual" class="kpi-value">0,0%</div>
+                <div class="progress-track" aria-hidden="true">
+                  <div id="kpi-percentual-bar" class="progress-fill" style="width: 0%"></div>
+                </div>
+                <div id="kpi-ocupacao-util" class="kpi-foot">0,0% das posições operacionais</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Produtos Cadastrados</div>
+                <div id="kpi-produtos" class="kpi-value">0</div>
+                <div id="kpi-produtos-sub" class="kpi-foot">SKUs distintos armazenados</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Total de Unidades Armazenadas</div>
+                <div id="kpi-unidades" class="kpi-value">0</div>
+                <div class="kpi-foot">Soma física de itens em estoque</div>
+              </div>
+            </div>
+
+            <div class="charts-grid">
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">Ocupação por Rua (A–F)</h2>
+                    <p class="card-desc">Distribuição das 25 posições porta-paletes por corredor</p>
+                  </div>
+                </div>
+                <div class="chart-canvas-wrap">
+                  <canvas id="chart-streets" aria-label="Gráfico de ocupação por rua"></canvas>
+                </div>
+                <div class="chart-legend">
+                  <span class="legend-item"><span class="legend-swatch" style="background: var(--status-ocupada-solid);"></span>Ocupada</span>
+                  <span class="legend-item"><span class="legend-swatch" style="background: var(--status-livre-solid);"></span>Livre</span>
+                  <span class="legend-item"><span class="legend-swatch" style="background: var(--status-indisponivel-solid);"></span>Indisponível</span>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">Distribuição de Status</h2>
+                    <p class="card-desc">Proporção consolidada das 150 posições</p>
+                  </div>
+                </div>
+                <div class="chart-canvas-wrap">
+                  <canvas id="chart-status" aria-label="Gráfico de distribuição de status"></canvas>
+                </div>
+                <div id="status-legend" class="chart-legend"></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">Movimentações Recentes</h2>
+                  <p class="card-desc">Últimas operações registradas no armazém</p>
+                </div>
+                <button id="btn-dash-history" class="btn btn-secondary btn-sm" type="button">Ver Histórico Completo</button>
+              </div>
+              <div id="dash-recent-table"></div>
+            </div>
+          </section>
+
+          <!-- 2. MAPA DO ARMAZÉM -->
+          <section id="view-mapa" class="view-section" aria-labelledby="title-mapa">
+            <div class="page-header">
+              <div>
+                <h1 id="title-mapa" class="page-title">Mapa do Armazém</h1>
+                <p class="page-subtitle">Visualização completa por rua, módulo (MOD-01 a MOD-05) e nível (NIVEL-5 no topo ao NIVEL-1 no piso).</p>
+              </div>
+              <div class="toolbar-group">
+                <span class="status-tag livre">Livre</span>
+                <span class="status-tag ocupada">Ocupada</span>
+                <span class="status-tag indisponivel">Indisponível</span>
+              </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 20px;">
+              <div class="toolbar" style="margin-bottom: 0;">
+                <div class="toolbar-group" style="flex: 1;">
+                  <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <input id="map-search" class="form-control" type="search" placeholder="Destacar por SKU, produto ou endereço..." />
+                  </div>
+                  <select id="map-street-filter" class="form-control" style="width: auto; min-width: 150px;" aria-label="Filtrar rua">
+                    <option value="TODAS">Todas as Ruas (A–F)</option>
+                    <option value="A">Rua A</option>
+                    <option value="B">Rua B</option>
+                    <option value="C">Rua C</option>
+                    <option value="D">Rua D</option>
+                    <option value="E">Rua E</option>
+                    <option value="F">Rua F</option>
+                  </select>
+                </div>
+                <div class="segmented-control" id="map-status-filter" role="group" aria-label="Filtrar status no mapa">
+                  <button class="seg-btn active" type="button" data-status="todos">Todos</button>
+                  <button class="seg-btn" type="button" data-status="livre">Livres</button>
+                  <button class="seg-btn" type="button" data-status="ocupada">Ocupadas</button>
+                  <button class="seg-btn" type="button" data-status="indisponivel">Indisponíveis</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="map-layout">
+              <div id="map-streets-container" class="streets-grid"></div>
+
+              <aside class="inspector-panel" aria-label="Detalhes da posição selecionada">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">Inspetor de Posição</h2>
+                    <p class="card-desc">Clique em qualquer bloco do mapa</p>
+                  </div>
+                </div>
+                <div id="map-inspector-body"></div>
+              </aside>
+            </div>
+          </section>
+
+          <!-- 3. RECEBIMENTO -->
+          <section id="view-recebimento" class="view-section" aria-labelledby="title-recebimento">
+            <div class="page-header">
+              <div>
+                <h1 id="title-recebimento" class="page-title">Recebimento de Mercadorias</h1>
+                <p class="page-subtitle">Endereçamento de entradas em posições livres do porta-paletes com validação automática.</p>
+              </div>
+            </div>
+
+            <div class="workspace-split">
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">Registrar Entrada em Estoque</h2>
+                    <p class="card-desc">Somente posições com status Livre aceitam novos produtos</p>
+                  </div>
+                  <button id="btn-suggest-free" class="btn btn-secondary btn-sm" type="button">Sugerir Próxima Livre</button>
+                </div>
+
+                <form id="form-recebimento" novalidate>
+                  <div class="form-grid">
+                    <div class="form-group">
+                      <label class="form-label" for="rec-sku">Código SKU *</label>
+                      <input id="rec-sku" class="form-control mono" type="text" placeholder="Ex: SKU-4090" required autocomplete="off" list="sku-datalist" />
+                      <datalist id="sku-datalist"></datalist>
+                      <span class="form-hint">Identificador único do item</span>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="rec-qtd">Quantidade *</label>
+                      <input id="rec-qtd" class="form-control mono" type="number" min="1" step="1" placeholder="Ex: 120" required />
+                      <span class="form-hint">Número inteiro maior que zero</span>
+                    </div>
+
+                    <div class="form-group full">
+                      <label class="form-label" for="rec-produto">Nome do Produto *</label>
+                      <input id="rec-produto" class="form-control" type="text" placeholder="Ex: Rolamento Esférico 6204-2RS" required autocomplete="off" />
+                    </div>
+
+                    <div class="form-group full">
+                      <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <label class="form-label" for="rec-endereco">Endereço de Destino *</label>
+                        <label class="inline-check">
+                          <input id="rec-only-free" type="checkbox" checked />
+                          <span>Listar apenas posições livres</span>
+                        </label>
+                      </div>
+                      <select id="rec-endereco" class="form-control mono" required></select>
+                      <span id="rec-address-hint" class="form-hint"></span>
+                    </div>
+
+                    <div class="form-group full">
+                      <label class="form-label" for="rec-obs">Observação / Documento (opcional)</label>
+                      <input id="rec-obs" class="form-control" type="text" placeholder="Ex: NF-e 004821 · Conferência aprovada" />
+                    </div>
+                  </div>
+
+                  <div class="form-actions">
+                    <button id="btn-rec-clear" class="btn btn-secondary" type="button">Limpar</button>
+                    <button class="btn btn-primary" type="submit">Confirmar Recebimento</button>
+                  </div>
+                </form>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">Disponibilidade por Rua</h2>
+                    <p class="card-desc">Resumo instantâneo de endereços livres para alocação</p>
+                  </div>
+                </div>
+                <div id="rec-availability-summary"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 4. EXPEDIÇÃO -->
+          <section id="view-expedicao" class="view-section" aria-labelledby="title-expedicao">
+            <div class="page-header">
+              <div>
+                <h1 id="title-expedicao" class="page-title">Expedição e Retirada</h1>
+                <p class="page-subtitle">Pesquise o item armazenado por SKU ou nome, confira o saldo e registre a saída.</p>
+              </div>
+            </div>
+
+            <div class="workspace-split">
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">Selecionar Item em Estoque</h2>
+                    <p class="card-desc">Apenas posições ocupadas com saldo positivo</p>
+                  </div>
+                </div>
+
+                <div class="toolbar">
+                  <div class="search-box" style="max-width: 100%;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <input id="exp-search" class="form-control" type="search" placeholder="Buscar por SKU, nome do produto ou endereço..." />
+                  </div>
+                </div>
+
+                <div id="exp-items-list" class="dispatch-list"></div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">Ordem de Retirada</h2>
+                    <p class="card-desc">A retirada total libera automaticamente a posição no mapa</p>
+                  </div>
+                </div>
+
+                <div id="exp-form-container"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 5. CONSULTA DE ESTOQUE -->
+          <section id="view-consulta" class="view-section" aria-labelledby="title-consulta">
+            <div class="page-header">
+              <div>
+                <h1 id="title-consulta" class="page-title">Consulta de Estoque</h1>
+                <p class="page-subtitle">Pesquisa em tempo real por SKU, produto, rua, módulo, nível ou endereço completo.</p>
+              </div>
+              <div id="consulta-counter" class="page-subtitle mono"></div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <div class="toolbar-group" style="flex: 1;">
+                  <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <input id="consulta-search" class="form-control" type="search" placeholder="Pesquisar por SKU, nome ou endereço..." />
+                  </div>
+
+                  <select id="consulta-street" class="form-control" style="width: auto; min-width: 140px;" aria-label="Filtrar rua na consulta">
+                    <option value="TODAS">Todas as Ruas</option>
+                    <option value="A">Rua A</option>
+                    <option value="B">Rua B</option>
+                    <option value="C">Rua C</option>
+                    <option value="D">Rua D</option>
+                    <option value="E">Rua E</option>
+                    <option value="F">Rua F</option>
+                  </select>
+                </div>
+
+                <div class="segmented-control" id="consulta-scope" role="group" aria-label="Escopo da consulta">
+                  <button class="seg-btn active" type="button" data-scope="ocupada">Com Estoque</button>
+                  <button class="seg-btn" type="button" data-scope="todas">Todas as 150 Posições</button>
+                </div>
+              </div>
+
+              <div id="consulta-table-wrap"></div>
+            </div>
+          </section>
+
+          <!-- 6. CONTROLE DE POSIÇÕES -->
+          <section id="view-posicoes" class="view-section" aria-labelledby="title-posicoes">
+            <div class="page-header">
+              <div>
+                <h1 id="title-posicoes" class="page-title">Controle de Posições</h1>
+                <p class="page-subtitle">Gerenciamento das 150 posições porta-paletes: bloqueio para manutenção e reativação de vagas vazias.</p>
+              </div>
+              <div id="posicoes-counter" class="page-subtitle mono"></div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <div class="toolbar-group" style="flex: 1;">
+                  <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <input id="posicoes-search" class="form-control" type="search" placeholder="Filtrar por endereço ou SKU..." />
+                  </div>
+
+                  <select id="posicoes-street" class="form-control" style="width: auto; min-width: 140px;" aria-label="Filtrar rua em posições">
+                    <option value="TODAS">Todas as Ruas</option>
+                    <option value="A">Rua A</option>
+                    <option value="B">Rua B</option>
+                    <option value="C">Rua C</option>
+                    <option value="D">Rua D</option>
+                    <option value="E">Rua E</option>
+                    <option value="F">Rua F</option>
+                  </select>
+                </div>
+
+                <div class="segmented-control" id="posicoes-status-filter" role="group" aria-label="Filtrar status de posição">
+                  <button class="seg-btn active" type="button" data-status="todos">Todas (150)</button>
+                  <button class="seg-btn" type="button" data-status="livre">Livres</button>
+                  <button class="seg-btn" type="button" data-status="ocupada">Ocupadas</button>
+                  <button class="seg-btn" type="button" data-status="indisponivel">Indisponíveis</button>
+                </div>
+              </div>
+
+              <div id="posicoes-table-wrap"></div>
+            </div>
+          </section>
+
+          <!-- 7. HISTÓRICO DE OPERAÇÕES -->
+          <section id="view-historico" class="view-section" aria-labelledby="title-historico">
+            <div class="page-header">
+              <div>
+                <h1 id="title-historico" class="page-title">Histórico de Operações</h1>
+                <p class="page-subtitle">Registro cronológico completo de entradas, saídas e alterações de disponibilidade (mais recentes primeiro).</p>
+              </div>
+              <div id="historico-counter" class="page-subtitle mono"></div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <div class="toolbar-group" style="flex: 1;">
+                  <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <input id="historico-search" class="form-control" type="search" placeholder="Pesquisar por SKU, produto, endereço ou descrição..." />
+                  </div>
+                </div>
+
+                <div class="segmented-control" id="historico-type-filter" role="group" aria-label="Filtrar tipo de operação">
+                  <button class="seg-btn active" type="button" data-type="todos">Todos</button>
+                  <button class="seg-btn" type="button" data-type="ENTRADA">Entradas</button>
+                  <button class="seg-btn" type="button" data-type="SAIDA">Saídas</button>
+                  <button class="seg-btn" type="button" data-type="POSICOES">Posições</button>
+                </div>
+              </div>
+
+              <div id="historico-table-wrap"></div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- Modal de Confirmação (substitui window.confirm para compatibilidade total) -->
+    <div id="confirm-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-card">
+        <h2 id="modal-title" class="modal-title">Restaurar dados de demonstração?</h2>
+        <p id="modal-text" class="modal-text">
+          Esta ação substituirá o estoque atual e o histórico salvo no navegador pelo conjunto inicial de demonstração (150 posições).
+        </p>
+        <div class="modal-actions">
+          <button id="modal-cancel" class="btn btn-secondary" type="button">Cancelar</button>
+          <button id="modal-confirm" class="btn btn-danger" type="button">Restaurar Agora</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        'use strict';
+
+        // =====================================================================
+        // 1. CONSTANTES E ESTRUTURA FÍSICA DO ARMAZÉM
+        // =====================================================================
+        const STORAGE_KEY = 'wms_pro_state_v1';
+        const STREETS = ['A', 'B', 'C', 'D', 'E', 'F'];
+        const MODULES = [1, 2, 3, 4, 5];
+        const LEVELS = [1, 2, 3, 4, 5];
+        const TOTAL_POSITIONS = STREETS.length * MODULES.length * LEVELS.length; // 150
+
+        const VIEW_LABELS = {
+          dashboard: 'Visão Geral',
+          mapa: 'Mapa do Armazém',
+          recebimento: 'Recebimento',
+          expedicao: 'Expedição',
+          consulta: 'Consulta de Estoque',
+          posicoes: 'Controle de Posições',
+          historico: 'Histórico de Operações'
+        };
+
+        const STATUS_LABELS = {
+          livre: 'Livre',
+          ocupada: 'Ocupada',
+          indisponivel: 'Indisponível'
+        };
+
+        const OP_LABELS = {
+          ENTRADA: 'Entrada',
+          SAIDA: 'Saída',
+          BLOQUEIO: 'Bloqueio',
+          REATIVACAO: 'Reativação'
+        };
+
+        // =====================================================================
+        // 2. ESTADO GLOBAL DA APLICAÇÃO
+        // =====================================================================
+        let state = {
+          positions: [],
+          history: []
+        };
+
+        let positionMap = new Map();
+
+        let uiState = {
+          activeView: 'dashboard',
+          selectedMapAddress: 'RUA-A / MOD-01 / NIVEL-1',
+          mapStatusFilter: 'todos',
+          mapStreetFilter: 'TODAS',
+          mapSearch: '',
+          consultaScope: 'ocupada',
+          consultaStreet: 'TODAS',
+          consultaSearch: '',
+          posicoesStatus: 'todos',
+          posicoesStreet: 'TODAS',
+          posicoesSearch: '',
+          historicoType: 'todos',
+          historicoSearch: '',
+          selectedDispatchAddress: null,
+          expSearch: ''
+        };
+
+        let feedbackTimer = null;
+
+        // =====================================================================
+        // 3. UTILITÁRIOS DE FORMATAÇÃO E SEGURANÇA
+        // =====================================================================
+        function buildAddress(rua, mod, nivel) {
+          const modStr = String(mod).padStart(2, '0');
+          return 'RUA-' + rua + ' / MOD-' + modStr + ' / NIVEL-' + nivel;
+        }
+
+        function escapeHtml(value) {
+          if (value === null || value === undefined) return '';
+          return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
+
+        function formatNumber(n) {
+          return Number(n || 0).toLocaleString('pt-BR');
+        }
+
+        function formatPercent(n) {
+          return Number(n || 0).toLocaleString('pt-BR', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+          }) + '%';
+        }
+
+        function formatDateParts(isoString) {
+          const d = isoString ? new Date(isoString) : new Date();
+          if (Number.isNaN(d.getTime())) {
+            return { date: '--/--/----', time: '--:--:--' };
+          }
+          const date = d.toLocaleDateString('pt-BR');
+          const time = d.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          });
+          return { date, time };
+        }
+
+        function generateBasePositions() {
+          const list = [];
+          const seen = new Set();
+          for (const rua of STREETS) {
+            for (const modulo of MODULES) {
+              for (const nivel of LEVELS) {
+                const endereco = buildAddress(rua, modulo, nivel);
+                if (seen.has(endereco)) continue;
+                seen.add(endereco);
+                list.push({
+                  endereco,
+                  rua,
+                  modulo,
+                  nivel,
+                  status: 'livre',
+                  sku: null,
+                  produto: null,
+                  quantidade: 0,
+                  updatedAt: null
+                });
+              }
+            }
+          }
+          return list;
+        }
+
+        function rebuildIndex() {
+          positionMap = new Map();
+          for (const pos of state.positions) {
+            positionMap.set(pos.endereco, pos);
+          }
+        }
+
+        // =====================================================================
+        // 4. DADOS DE DEMONSTRAÇÃO E PERSISTÊNCIA (localStorage)
+        // =====================================================================
+        function createDemoState() {
+          const positions = generateBasePositions();
+          const map = new Map(positions.map((p) => [p.endereco, p]));
+          const now = Date.now();
+
+          const demoItems = [
+            { endereco: 'RUA-A / MOD-01 / NIVEL-1', sku: 'SKU-1001', produto: 'Parafuso Sextavado M8 Inox (Cx 500)', quantidade: 420, minsAgo: 310 },
+            { endereco: 'RUA-A / MOD-01 / NIVEL-2', sku: 'SKU-1002', produto: 'Porca Travante M8 Zincada (Cx 500)', quantidade: 380, minsAgo: 295 },
+            { endereco: 'RUA-A / MOD-02 / NIVEL-1', sku: 'SKU-1045', produto: 'Rolamento Esférico 6204-2RS', quantidade: 165, minsAgo: 280 },
+            { endereco: 'RUA-A / MOD-03 / NIVEL-3', sku: 'SKU-1088', produto: 'Arruela Lisa Aço Carbono 10mm', quantidade: 950, minsAgo: 260 },
+            { endereco: 'RUA-A / MOD-05 / NIVEL-2', sku: 'SKU-1001', produto: 'Parafuso Sextavado M8 Inox (Cx 500)', quantidade: 210, minsAgo: 245 },
+
+            { endereco: 'RUA-B / MOD-01 / NIVEL-1', sku: 'SKU-2010', produto: 'Motor Elétrico Trifásico 2CV 220/380V', quantidade: 18, minsAgo: 230 },
+            { endereco: 'RUA-B / MOD-02 / NIVEL-2', sku: 'SKU-2014', produto: 'Inversor de Frequência 3HP Industrial', quantidade: 24, minsAgo: 215 },
+            { endereco: 'RUA-B / MOD-03 / NIVEL-1', sku: 'SKU-2033', produto: 'Contator Tripolar 32A 220V', quantidade: 76, minsAgo: 195 },
+            { endereco: 'RUA-B / MOD-04 / NIVEL-4', sku: 'SKU-2075', produto: 'Sensor Indutivo M12 PNP', quantidade: 140, minsAgo: 180 },
+
+            { endereco: 'RUA-C / MOD-01 / NIVEL-1', sku: 'SKU-3005', produto: 'Bobina Filme Stretch 500mm x 25µm', quantidade: 88, minsAgo: 165 },
+            { endereco: 'RUA-C / MOD-02 / NIVEL-3', sku: 'SKU-3012', produto: 'Caixa Papelão Ondulado 40x30x25cm', quantidade: 640, minsAgo: 150 },
+            { endereco: 'RUA-C / MOD-03 / NIVEL-2', sku: 'SKU-3028', produto: 'Fita Adesiva Industrial Transparente 48mm', quantidade: 520, minsAgo: 135 },
+            { endereco: 'RUA-C / MOD-05 / NIVEL-1', sku: 'SKU-3041', produto: 'Palete PBR Madeira Tratada 1000x1200', quantidade: 35, minsAgo: 120 },
+
+            { endereco: 'RUA-D / MOD-01 / NIVEL-2', sku: 'SKU-4011', produto: 'Válvula Solenoide Pneumática 5/2 Vias', quantidade: 54, minsAgo: 105 },
+            { endereco: 'RUA-D / MOD-02 / NIVEL-1', sku: 'SKU-4022', produto: 'Mangueira PU Azul 8mm (Rolo 50m)', quantidade: 32, minsAgo: 90 },
+            { endereco: 'RUA-D / MOD-04 / NIVEL-3', sku: 'SKU-4060', produto: 'Filtro Regulador de Ar Comprimido 1/2"', quantidade: 44, minsAgo: 75 },
+
+            { endereco: 'RUA-E / MOD-01 / NIVEL-1', sku: 'SKU-5008', produto: 'Cabo Flexível PP 4x2,5mm (Rolo 100m)', quantidade: 27, minsAgo: 60 },
+            { endereco: 'RUA-E / MOD-03 / NIVEL-2', sku: 'SKU-5019', produto: 'Disjuntor Caixa Moldada 100A', quantidade: 39, minsAgo: 48 },
+            { endereco: 'RUA-E / MOD-04 / NIVEL-1', sku: 'SKU-5030', produto: 'Luminária LED High Bay 150W', quantidade: 46, minsAgo: 36 },
+
+            { endereco: 'RUA-F / MOD-02 / NIVEL-2', sku: 'SKU-6015', produto: 'Capacete Segurança Classe B Aba Frontal', quantidade: 185, minsAgo: 28 },
+            { endereco: 'RUA-F / MOD-03 / NIVEL-1', sku: 'SKU-6024', produto: 'Luva Nitrílica Anticorte Nível 5 (Par)', quantidade: 310, minsAgo: 18 },
+            { endereco: 'RUA-F / MOD-05 / NIVEL-3', sku: 'SKU-6040', produto: 'Óculos de Proteção Antirrisco Incolor', quantidade: 260, minsAgo: 10 }
+          ];
+
+          const demoUnavailable = [
+            { endereco: 'RUA-A / MOD-04 / NIVEL-5', reason: 'Longarina em inspeção estrutural' },
+            { endereco: 'RUA-B / MOD-05 / NIVEL-5', reason: 'Manutenção preventiva de corredor' },
+            { endereco: 'RUA-C / MOD-04 / NIVEL-1', reason: 'Reparo de piso próximo ao corredor C' },
+            { endereco: 'RUA-D / MOD-03 / NIVEL-5', reason: 'Área reservada para inventário rotativo' },
+            { endereco: 'RUA-E / MOD-02 / NIVEL-4', reason: 'Proteção de coluna em substituição' },
+            { endereco: 'RUA-F / MOD-01 / NIVEL-1', reason: 'Bloqueio temporário de segurança' },
+            { endereco: 'RUA-F / MOD-04 / NIVEL-5', reason: 'Iluminação superior em manutenção' }
+          ];
+
+          const history = [];
+
+          for (const item of demoItems) {
+            const pos = map.get(item.endereco);
+            if (!pos) continue;
+            const ts = new Date(now - item.minsAgo * 60000).toISOString();
+            pos.status = 'ocupada';
+            pos.sku = item.sku;
+            pos.produto = item.produto;
+            pos.quantidade = item.quantidade;
+            pos.updatedAt = ts;
+
+            history.push({
+              id: 'hist-' + item.minsAgo + '-' + item.sku,
+              timestamp: ts,
+              tipo: 'ENTRADA',
+              produto: item.produto,
+              sku: item.sku,
+              quantidade: item.quantidade,
+              endereco: item.endereco,
+              descricao: 'Recebimento inicial de demonstração na posição ' + item.endereco + '.'
+            });
+          }
+
+          for (let i = 0; i < demoUnavailable.length; i++) {
+            const blk = demoUnavailable[i];
+            const pos = map.get(blk.endereco);
+            if (!pos) continue;
+            const ts = new Date(now - (45 - i * 3) * 60000).toISOString();
+            pos.status = 'indisponivel';
+            pos.sku = null;
+            pos.produto = null;
+            pos.quantidade = 0;
+            pos.updatedAt = ts;
+
+            history.push({
+              id: 'hist-blk-' + i,
+              timestamp: ts,
+              tipo: 'BLOQUEIO',
+              produto: '—',
+              sku: '—',
+              quantidade: 0,
+              endereco: blk.endereco,
+              descricao: blk.reason
+            });
+          }
+
+          // Exemplo de saída no histórico para ilustrar o fluxo completo
+          history.push({
+            id: 'hist-demo-saida-1',
+            timestamp: new Date(now - 5 * 60000).toISOString(),
+            tipo: 'SAIDA',
+            produto: 'Caixa Papelão Ondulado 40x30x25cm',
+            sku: 'SKU-3012',
+            quantidade: 60,
+            endereco: 'RUA-C / MOD-02 / NIVEL-3',
+            descricao: 'Expedição parcial · Pedido #OP-2041 (saldo restante: 640 un.).'
+          });
+
+          history.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+          return { positions, history };
+        }
+
+        function saveState() {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          } catch (err) {
+            showFeedback('error', 'Não foi possível salvar os dados no localStorage do navegador.');
+          }
+        }
+
+        function loadState() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) {
+              state = createDemoState();
+              rebuildIndex();
+              saveState();
+              return;
+            }
+
+            const parsed = JSON.parse(raw);
+            if (!parsed || !Array.isArray(parsed.positions)) {
+              throw new Error('Estrutura inválida');
+            }
+
+            // Garante cobertura exata das 150 posições sem duplicidade
+            const base = generateBasePositions();
+            const savedByAddr = new Map();
+            for (const p of parsed.positions) {
+              if (p && typeof p.endereco === 'string' && !savedByAddr.has(p.endereco)) {
+                savedByAddr.set(p.endereco, p);
+              }
+            }
+
+            for (const pos of base) {
+              const saved = savedByAddr.get(pos.endereco);
+              if (saved) {
+                const validStatus = ['livre', 'ocupada', 'indisponivel'].includes(saved.status)
+                  ? saved.status
+                  : 'livre';
+                if (validStatus === 'ocupada' && saved.sku && saved.produto && Number(saved.quantidade) > 0) {
+                  pos.status = 'ocupada';
+                  pos.sku = String(saved.sku).trim().toUpperCase();
+                  pos.produto = String(saved.produto).trim();
+                  pos.quantidade = Math.floor(Number(saved.quantidade));
+                  pos.updatedAt = saved.updatedAt || null;
+                } else if (validStatus === 'indisponivel') {
+                  pos.status = 'indisponivel';
+                  pos.sku = null;
+                  pos.produto = null;
+                  pos.quantidade = 0;
+                  pos.updatedAt = saved.updatedAt || null;
+                }
+              }
+            }
+
+            const history = Array.isArray(parsed.history) ? parsed.history.slice() : [];
+            history.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+            state = { positions: base, history };
+            rebuildIndex();
+          } catch (err) {
+            state = createDemoState();
+            rebuildIndex();
+            saveState();
+          }
+        }
+
+        // =====================================================================
+        // 5. FEEDBACK VISUAL (ALERTAS E MENSAGENS)
+        // =====================================================================
+        function showFeedback(type, message) {
+          const container = document.getElementById('feedback-container');
+          if (!container) return;
+
+          if (feedbackTimer) {
+            clearTimeout(feedbackTimer);
+            feedbackTimer = null;
+          }
+
+          let iconSvg = '';
+          if (type === 'success') {
+            iconSvg =
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+          } else if (type === 'warning') {
+            iconSvg =
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+          } else {
+            iconSvg =
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+          }
+
+          container.innerHTML =
+            '<div class="alert-banner ' +
+            escapeHtml(type) +
+            '" role="alert">' +
+            '<div class="alert-body">' +
+            iconSvg +
+            '<span>' +
+            escapeHtml(message) +
+            '</span>' +
+            '</div>' +
+            '<button class="alert-close" type="button" aria-label="Fechar aviso" onclick="this.parentElement.remove()">' +
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+            '</button>' +
+            '</div>';
+
+          feedbackTimer = setTimeout(function () {
+            const box = document.getElementById('feedback-container');
+            if (box) box.innerHTML = '';
+          }, 7000);
+        }
+
+        // =====================================================================
+        // 6. REGRAS DE NEGÓCIO E OPERAÇÕES DO WMS
+        // =====================================================================
+        function recordHistory(entry) {
+          state.history.unshift({
+            id: 'op-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+            timestamp: new Date().toISOString(),
+            tipo: entry.tipo,
+            produto: entry.produto || '—',
+            sku: entry.sku || '—',
+            quantidade: Number(entry.quantidade || 0),
+            endereco: entry.endereco,
+            descricao: entry.descricao
+          });
+          // Ordenação explícita do mais recente para o mais antigo
+          state.history.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        }
+
+        function handleRecebimento(rawSku, rawProduto, rawQtd, endereco, rawObs) {
+          const sku = String(rawSku || '').trim().toUpperCase();
+          const produto = String(rawProduto || '').trim();
+          const quantidade = Number(rawQtd);
+          const obs = String(rawObs || '').trim();
+
+          if (!sku) {
+            showFeedback('error', 'Informe o código SKU do produto.');
+            return false;
+          }
+          if (!produto) {
+            showFeedback('error', 'Informe o nome do produto.');
+            return false;
+          }
+          if (!Number.isInteger(quantidade) || quantidade <= 0) {
+            showFeedback('error', 'A quantidade de recebimento deve ser um número inteiro maior que zero.');
+            return false;
+          }
+          if (!endereco) {
+            showFeedback('error', 'Selecione um endereço de destino.');
+            return false;
+          }
+
+          const pos = positionMap.get(endereco);
+          if (!pos) {
+            showFeedback('error', 'Endereço inválido ou inexistente no armazém.');
+            return false;
+          }
+
+          if (pos.status === 'ocupada') {
+            showFeedback(
+              'error',
+              'Operação bloqueada: a posição ' +
+                endereco +
+                ' já está ocupada por ' +
+                pos.sku +
+                ' (' +
+                pos.produto +
+                '). Escolha uma posição livre.'
+            );
+            return false;
+          }
+
+          if (pos.status === 'indisponivel') {
+            showFeedback(
+              'error',
+              'Operação bloqueada: a posição ' +
+                endereco +
+                ' está marcada como indisponível e não pode receber mercadorias.'
+            );
+            return false;
+          }
+
+          pos.status = 'ocupada';
+          pos.sku = sku;
+          pos.produto = produto;
+          pos.quantidade = quantidade;
+          pos.updatedAt = new Date().toISOString();
+
+          const descBase = 'Recebimento de ' + formatNumber(quantidade) + ' un. armazenado em ' + endereco + '.';
+          recordHistory({
+            tipo: 'ENTRADA',
+            produto,
+            sku,
+            quantidade,
+            endereco,
+            descricao: obs ? descBase + ' (' + obs + ')' : descBase
+          });
+
+          saveState();
+          uiState.selectedMapAddress = endereco;
+          renderAll();
+          showFeedback(
+            'success',
+            'Recebimento confirmado: ' +
+              formatNumber(quantidade) +
+              ' un. de ' +
+              sku +
+              ' (' +
+              produto +
+              ') alocadas em ' +
+              endereco +
+              '.'
+          );
+          return true;
+        }
+
+        function handleExpedicao(endereco, rawQtd, rawMotivo) {
+          const pos = positionMap.get(endereco);
+          if (!pos || pos.status !== 'ocupada') {
+            showFeedback('error', 'Selecione uma posição ocupada válida para realizar a expedição.');
+            return false;
+          }
+
+          const qtd = Number(rawQtd);
+          if (!Number.isInteger(qtd) || qtd <= 0) {
+            showFeedback('error', 'Informe uma quantidade inteira maior que zero para retirada.');
+            return false;
+          }
+
+          if (qtd > pos.quantidade) {
+            showFeedback(
+              'error',
+              'Retirada negada: a quantidade solicitada (' +
+                formatNumber(qtd) +
+                ') excede o estoque disponível (' +
+                formatNumber(pos.quantidade) +
+                ' un.) em ' +
+                endereco +
+                '.'
+            );
+            return false;
+          }
+
+          const sku = pos.sku;
+          const produto = pos.produto;
+          pos.quantidade -= qtd;
+          pos.updatedAt = new Date().toISOString();
+
+          const motivo = String(rawMotivo || '').trim();
+          let freed = false;
+
+          if (pos.quantidade === 0) {
+            pos.status = 'livre';
+            pos.sku = null;
+            pos.produto = null;
+            freed = true;
+            if (uiState.selectedDispatchAddress === endereco) {
+              uiState.selectedDispatchAddress = null;
+            }
+          }
+
+          const descBase = freed
+            ? 'Retirada total (' + formatNumber(qtd) + ' un.) · Posição liberada.'
+            : 'Retirada parcial (' + formatNumber(qtd) + ' un.) · Saldo restante: ' + formatNumber(pos.quantidade) + ' un.';
+
+          recordHistory({
+            tipo: 'SAIDA',
+            produto,
+            sku,
+            quantidade: qtd,
+            endereco,
+            descricao: motivo ? descBase + ' (' + motivo + ')' : descBase
+          });
+
+          saveState();
+          renderAll();
+          showFeedback(
+            'success',
+            freed
+              ? 'Expedição concluída: ' + formatNumber(qtd) + ' un. de ' + sku + ' retiradas. A posição ' + endereco + ' foi liberada.'
+              : 'Expedição concluída: ' + formatNumber(qtd) + ' un. de ' + sku + ' retiradas. Restam ' + formatNumber(pos.quantidade) + ' un. em ' + endereco + '.'
+          );
+          return true;
+        }
+
+        function handleTogglePositionStatus(endereco) {
+          const pos = positionMap.get(endereco);
+          if (!pos) return;
+
+          if (pos.status === 'ocupada') {
+            showFeedback(
+              'error',
+              'Ação não permitida: a posição ' +
+                endereco +
+                ' contém mercadoria (' +
+                pos.sku +
+                ' · ' +
+                formatNumber(pos.quantidade) +
+                ' un.). Faça a expedição antes de bloqueá-la.'
+            );
+            return;
+          }
+
+          if (pos.status === 'livre') {
+            pos.status = 'indisponivel';
+            pos.updatedAt = new Date().toISOString();
+            recordHistory({
+              tipo: 'BLOQUEIO',
+              produto: '—',
+              sku: '—',
+              quantidade: 0,
+              endereco,
+              descricao: 'Posição marcada como indisponível pelo controle de posições.'
+            });
+            saveState();
+            renderAll();
+            showFeedback('warning', 'Posição ' + endereco + ' marcada como Indisponível.');
+            return;
+          }
+
+          if (pos.status === 'indisponivel') {
+            pos.status = 'livre';
+            pos.updatedAt = new Date().toISOString();
+            recordHistory({
+              tipo: 'REATIVACAO',
+              produto: '—',
+              sku: '—',
+              quantidade: 0,
+              endereco,
+              descricao: 'Posição indisponível reativada e liberada para armazenagem.'
+            });
+            saveState();
+            renderAll();
+            showFeedback('success', 'Posição ' + endereco + ' reativada e disponível (Livre).');
+          }
+        }
+
+        function getMetrics() {
+          let ocupadas = 0;
+          let livres = 0;
+          let indisponiveis = 0;
+          let totalUnidades = 0;
+          const uniqueSkus = new Set();
+          const byStreet = {};
+
+          for (const rua of STREETS) {
+            byStreet[rua] = { total: 0, ocupadas: 0, livres: 0, indisponiveis: 0, unidades: 0 };
+          }
+
+          for (const pos of state.positions) {
+            const st = byStreet[pos.rua];
+            st.total += 1;
+
+            if (pos.status === 'ocupada') {
+              ocupadas += 1;
+              st.ocupadas += 1;
+              totalUnidades += pos.quantidade;
+              st.unidades += pos.quantidade;
+              if (pos.sku) uniqueSkus.add(pos.sku);
+            } else if (pos.status === 'livre') {
+              livres += 1;
+              st.livres += 1;
+            } else {
+              indisponiveis += 1;
+              st.indisponiveis += 1;
+            }
+          }
+
+          const capacidade = state.positions.length;
+          const operacionais = capacidade - indisponiveis;
+          const pctOcupacao = capacidade > 0 ? (ocupadas / capacidade) * 100 : 0;
+          const pctOperacional = operacionais > 0 ? (ocupadas / operacionais) * 100 : 0;
+
+          return {
+            capacidade,
+            ocupadas,
+            livres,
+            indisponiveis,
+            operacionais,
+            pctOcupacao,
+            pctOperacional,
+            totalProdutosDistintos: uniqueSkus.size,
+            totalUnidades,
+            byStreet
+          };
+        }
+
+        // =====================================================================
+        // 7. NAVEGAÇÃO ENTRE TELAS
+        // =====================================================================
+        function switchView(viewName) {
+          if (!VIEW_LABELS[viewName]) return;
+          uiState.activeView = viewName;
+
+          document.querySelectorAll('.view-section').forEach((sec) => {
+            sec.classList.toggle('active', sec.id === 'view-' + viewName);
+          });
+
+          document.querySelectorAll('#sidebar-nav .nav-item').forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.view === viewName);
+          });
+
+          const crumb = document.getElementById('header-breadcrumb');
+          if (crumb) crumb.textContent = VIEW_LABELS[viewName];
+
+          closeMobileSidebar();
+
+          if (viewName === 'dashboard') {
+            renderDashboardCharts();
+          }
+        }
+
+        function openMobileSidebar() {
+          document.getElementById('sidebar').classList.add('open');
+          document.getElementById('sidebar-backdrop').classList.add('open');
+        }
+
+        function closeMobileSidebar() {
+          document.getElementById('sidebar').classList.remove('open');
+          document.getElementById('sidebar-backdrop').classList.remove('open');
+        }
+
+        // =====================================================================
+        // 8. RENDERIZAÇÃO: VISÃO GERAL E GRÁFICOS NATIVOS (CANVAS)
+        // =====================================================================
+        function renderDashboard() {
+          const m = getMetrics();
+
+          document.getElementById('kpi-total').textContent = formatNumber(m.capacidade);
+          document.getElementById('kpi-ocupadas').textContent = formatNumber(m.ocupadas);
+          document.getElementById('kpi-ocupadas-sub').textContent = formatPercent(m.pctOcupacao) + ' da capacidade total';
+          document.getElementById('kpi-livres').textContent = formatNumber(m.livres);
+          document.getElementById('kpi-livres-sub').textContent = formatPercent((m.livres / m.capacidade) * 100) + ' disponíveis';
+          document.getElementById('kpi-indisponiveis').textContent = formatNumber(m.indisponiveis);
+          document.getElementById('kpi-indisponiveis-sub').textContent = formatPercent((m.indisponiveis / m.capacidade) * 100) + ' fora de operação';
+
+          document.getElementById('kpi-percentual').textContent = formatPercent(m.pctOcupacao);
+          document.getElementById('kpi-percentual-bar').style.width = Math.min(100, m.pctOcupacao).toFixed(1) + '%';
+          document.getElementById('kpi-ocupacao-util').textContent =
+            formatPercent(m.pctOperacional) + ' das ' + formatNumber(m.operacionais) + ' posições operacionais';
+
+          document.getElementById('kpi-produtos').textContent = formatNumber(m.totalProdutosDistintos);
+          document.getElementById('kpi-produtos-sub').textContent =
+            formatNumber(m.totalProdutosDistintos) + ' SKUs únicos em ' + formatNumber(m.ocupadas) + ' endereços';
+
+          document.getElementById('kpi-unidades').textContent = formatNumber(m.totalUnidades);
+
+          // Legenda donut
+          const legendEl = document.getElementById('status-legend');
+          if (legendEl) {
+            legendEl.innerHTML =
+              '<span class="legend-item"><span class="legend-swatch" style="background: var(--status-ocupada-solid);"></span>Ocupada: <strong class="mono">' +
+              formatNumber(m.ocupadas) +
+              '</strong></span>' +
+              '<span class="legend-item"><span class="legend-swatch" style="background: var(--status-livre-solid);"></span>Livre: <strong class="mono">' +
+              formatNumber(m.livres) +
+              '</strong></span>' +
+              '<span class="legend-item"><span class="legend-swatch" style="background: var(--status-indisponivel-solid);"></span>Indisponível: <strong class="mono">' +
+              formatNumber(m.indisponiveis) +
+              '</strong></span>';
+          }
+
+          // Tabela recente
+          const recentContainer = document.getElementById('dash-recent-table');
+          const recent = state.history.slice(0, 6);
+          if (recent.length === 0) {
+            recentContainer.innerHTML =
+              '<div class="empty-state"><p class="empty-state-title">Nenhuma operação registrada</p><p class="empty-state-desc">Realize um recebimento ou expedição para visualizar o histórico recente.</p></div>';
+          } else {
+            let rows = '';
+            for (const item of recent) {
+              const dt = formatDateParts(item.timestamp);
+              rows +=
+                '<tr>' +
+                '<td class="mono">' +
+                escapeHtml(dt.date) +
+                ' ' +
+                escapeHtml(dt.time) +
+                '</td>' +
+                '<td><span class="op-type ' +
+                escapeHtml(item.tipo) +
+                '">' +
+                escapeHtml(OP_LABELS[item.tipo] || item.tipo) +
+                '</span></td>' +
+                '<td class="mono">' +
+                escapeHtml(item.sku) +
+                '</td>' +
+                '<td>' +
+                escapeHtml(item.produto) +
+                '</td>' +
+                '<td class="text-right mono">' +
+                (item.quantidade > 0 ? formatNumber(item.quantidade) : '—') +
+                '</td>' +
+                '<td class="mono">' +
+                escapeHtml(item.endereco) +
+                '</td>' +
+                '</tr>';
+            }
+            recentContainer.innerHTML =
+              '<div class="table-wrap"><table><thead><tr>' +
+              '<th>Data / Horário</th><th>Operação</th><th>SKU</th><th>Produto</th><th class="text-right">Qtd.</th><th>Endereço</th>' +
+              '</tr></thead><tbody>' +
+              rows +
+              '</tbody></table></div>';
+          }
+
+          if (uiState.activeView === 'dashboard') {
+            renderDashboardCharts();
+          }
+        }
+
+        function setupCanvas(canvas) {
+          const parent = canvas.parentElement;
+          const width = Math.max(240, parent.clientWidth);
+          const height = Math.max(220, parent.clientHeight);
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          canvas.width = Math.floor(width * dpr);
+          canvas.height = Math.floor(height * dpr);
+          const ctx = canvas.getContext('2d');
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.clearRect(0, 0, width, height);
+          return { ctx, width, height };
+        }
+
+        function renderDashboardCharts() {
+          const m = getMetrics();
+          drawStreetsChart(m);
+          drawStatusDonutChart(m);
+        }
+
+        function drawStreetsChart(m) {
+          const canvas = document.getElementById('chart-streets');
+          if (!canvas || !canvas.parentElement || canvas.parentElement.clientWidth === 0) return;
+
+          const { ctx, width, height } = setupCanvas(canvas);
+          const padTop = 28;
+          const padBottom = 34;
+          const padLeft = 36;
+          const padRight = 16;
+          const chartW = width - padLeft - padRight;
+          const chartH = height - padTop - padBottom;
+          const maxVal = 25;
+
+          // Linhas de grade horizontais
+          ctx.strokeStyle = '#E2E8F0';
+          ctx.lineWidth = 1;
+          ctx.fillStyle = '#64748B';
+          ctx.font = '500 11px "JetBrains Mono", monospace';
+          ctx.textAlign = 'right';
+          ctx.textBaseline = 'middle';
+
+          const steps = [0, 5, 10, 15, 20, 25];
+          for (const val of steps) {
+            const y = padTop + chartH - (val / maxVal) * chartH;
+            ctx.beginPath();
+            ctx.moveTo(padLeft, y);
+            ctx.lineTo(width - padRight, y);
+            ctx.stroke();
+            ctx.fillText(String(val), padLeft - 8, y);
+          }
+
+          const slotW = chartW / STREETS.length;
+          const barW = Math.min(48, slotW * 0.56);
+
+          STREETS.forEach((rua, idx) => {
+            const st = m.byStreet[rua];
+            const cx = padLeft + idx * slotW + slotW / 2;
+            const x = cx - barW / 2;
+
+            let currentY = padTop + chartH;
+
+            // 1. Ocupadas (base)
+            if (st.ocupadas > 0) {
+              const h = (st.ocupadas / maxVal) * chartH;
+              currentY -= h;
+              ctx.fillStyle = '#DC2626';
+              ctx.fillRect(x, currentY, barW, h);
+            }
+
+            // 2. Indisponíveis (meio)
+            if (st.indisponiveis > 0) {
+              const h = (st.indisponiveis / maxVal) * chartH;
+              currentY -= h;
+              ctx.fillStyle = '#D97706';
+              ctx.fillRect(x, currentY, barW, h);
+            }
+
+            // 3. Livres (topo)
+            if (st.livres > 0) {
+              const h = (st.livres / maxVal) * chartH;
+              currentY -= h;
+              ctx.fillStyle = '#16A34A';
+              ctx.fillRect(x, currentY, barW, h);
+            }
+
+            // Percentual de ocupação acima da coluna
+            const occPct = Math.round((st.ocupadas / st.total) * 100);
+            ctx.fillStyle = '#0F1F3D';
+            ctx.font = '600 11px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(occPct + '% oc.', cx, padTop - 6);
+
+            // Rótulo da rua
+            ctx.fillStyle = '#334155';
+            ctx.font = '600 12px "Plus Jakarta Sans", sans-serif';
+            ctx.textBaseline = 'top';
+            ctx.fillText('Rua ' + rua, cx, padTop + chartH + 10);
+          });
+        }
+
+        function drawStatusDonutChart(m) {
+          const canvas = document.getElementById('chart-status');
+          if (!canvas || !canvas.parentElement || canvas.parentElement.clientWidth === 0) return;
+
+          const { ctx, width, height } = setupCanvas(canvas);
+          const cx = width / 2;
+          const cy = height / 2;
+          const radius = Math.min(width, height) * 0.38;
+          const thickness = Math.max(24, radius * 0.38);
+          const innerRadius = radius - thickness;
+
+          const slices = [
+            { label: 'Ocupada', value: m.ocupadas, color: '#DC2626' },
+            { label: 'Livre', value: m.livres, color: '#16A34A' },
+            { label: 'Indisponível', value: m.indisponiveis, color: '#D97706' }
+          ];
+
+          const total = m.capacidade || 1;
+          let startAngle = -Math.PI / 2;
+
+          for (const slice of slices) {
+            if (slice.value <= 0) continue;
+            const angle = (slice.value / total) * Math.PI * 2;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, startAngle, startAngle + angle);
+            ctx.arc(cx, cy, innerRadius, startAngle + angle, startAngle, true);
+            ctx.closePath();
+            ctx.fillStyle = slice.color;
+            ctx.fill();
+
+            // Separador sutil entre fatias
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            startAngle += angle;
+          }
+
+          // Texto central
+          ctx.fillStyle = '#0F1F3D';
+          ctx.font = '700 26px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(String(m.capacidade), cx, cy - 8);
+
+          ctx.fillStyle = '#64748B';
+          ctx.font = '500 12px "Plus Jakarta Sans", sans-serif';
+          ctx.fillText('posições totais', cx, cy + 16);
+        }
+
+        // =====================================================================
+        // 9. RENDERIZAÇÃO: MAPA DO ARMAZÉM
+        // =====================================================================
+        function renderMap() {
+          const container = document.getElementById('map-streets-container');
+          const query = uiState.mapSearch.trim().toLowerCase();
+          const streetFilter = uiState.mapStreetFilter;
+          const statusFilter = uiState.mapStatusFilter;
+
+          const streetsToShow = streetFilter === 'TODAS' ? STREETS : [streetFilter];
+          let html = '';
+
+          for (const rua of streetsToShow) {
+            const streetPositions = state.positions.filter((p) => p.rua === rua);
+            const occCount = streetPositions.filter((p) => p.status === 'ocupada').length;
+            const freeCount = streetPositions.filter((p) => p.status === 'livre').length;
+
+            let modulesHtml = '';
+            for (const mod of MODULES) {
+              let levelsHtml = '';
+              // Nível 5 no topo, nível 1 na base (estrutura porta-paletes real)
+              for (let lvl = 5; lvl >= 1; lvl--) {
+                const addr = buildAddress(rua, mod, lvl);
+                const pos = positionMap.get(addr);
+                if (!pos) continue;
+
+                const matchesStatus = statusFilter === 'todos' || pos.status === statusFilter;
+                const matchesQuery =
+                  !query ||
+                  pos.endereco.toLowerCase().includes(query) ||
+                  (pos.sku && pos.sku.toLowerCase().includes(query)) ||
+                  (pos.produto && pos.produto.toLowerCase().includes(query));
+
+                const isDimmed = !matchesStatus || !matchesQuery;
+                const isSelected = uiState.selectedMapAddress === addr;
+
+                const subText =
+                  pos.status === 'ocupada'
+                    ? pos.sku
+                    : pos.status === 'indisponivel'
+                    ? 'Indisp.'
+                    : 'Livre';
+
+                const titleAttr =
+                  addr +
+                  ' | ' +
+                  STATUS_LABELS[pos.status] +
+                  (pos.status === 'ocupada' ? ' | ' + pos.sku + ' - ' + pos.produto + ' (' + pos.quantidade + ' un.)' : '');
+
+                levelsHtml +=
+                  '<button type="button" class="pos-cell ' +
+                  pos.status +
+                  (isSelected ? ' selected' : '') +
+                  (isDimmed ? ' dimmed' : '') +
+                  '" data-addr="' +
+                  escapeHtml(addr) +
+                  '" title="' +
+                  escapeHtml(titleAttr) +
+                  '">' +
+                  '<span>N' +
+                  lvl +
+                  '</span>' +
+                  '<span class="pos-cell-sub">' +
+                  escapeHtml(subText) +
+                  '</span>' +
+                  '</button>';
+              }
+
+              modulesHtml +=
+                '<div class="module-col">' +
+                '<div class="module-label">MOD-' +
+                String(mod).padStart(2, '0') +
+                '</div>' +
+                levelsHtml +
+                '</div>';
+            }
+
+            html +=
+              '<div class="street-card">' +
+              '<div class="street-header">' +
+              '<h3 class="street-title">Rua ' +
+              rua +
+              '</h3>' +
+              '<span class="street-summary mono">' +
+              occCount +
+              ' ocupadas · ' +
+              freeCount +
+              ' livres</span>' +
+              '</div>' +
+              '<div class="modules-row">' +
+              modulesHtml +
+              '</div>' +
+              '</div>';
+          }
+
+          container.innerHTML = html;
+          renderMapInspector();
+        }
+
+        function renderMapInspector() {
+          const body = document.getElementById('map-inspector-body');
+          const pos = positionMap.get(uiState.selectedMapAddress) || state.positions[0];
+          if (!pos) {
+            body.innerHTML = '<div class="empty-state"><p class="empty-state-title">Nenhuma posição selecionada</p></div>';
+            return;
+          }
+
+          let actionHtml = '';
+          if (pos.status === 'livre') {
+            actionHtml =
+              '<div style="display:flex; flex-direction:column; gap:8px; margin-top:16px;">' +
+              '<button type="button" class="btn btn-primary" data-action="go-receive" data-addr="' +
+              escapeHtml(pos.endereco) +
+              '">Receber Produto Aqui</button>' +
+              '<button type="button" class="btn btn-secondary" data-action="toggle-pos" data-addr="' +
+              escapeHtml(pos.endereco) +
+              '">Tornar Indisponível</button>' +
+              '</div>';
+          } else if (pos.status === 'ocupada') {
+            actionHtml =
+              '<div style="display:flex; flex-direction:column; gap:8px; margin-top:16px;">' +
+              '<button type="button" class="btn btn-accent" data-action="go-dispatch" data-addr="' +
+              escapeHtml(pos.endereco) +
+              '">Expedir / Retirar Estoque</button>' +
+              '</div>';
+          } else {
+            actionHtml =
+              '<div style="display:flex; flex-direction:column; gap:8px; margin-top:16px;">' +
+              '<button type="button" class="btn btn-secondary" data-action="toggle-pos" data-addr="' +
+              escapeHtml(pos.endereco) +
+              '">Reativar Posição</button>' +
+              '</div>';
+          }
+
+          body.innerHTML =
+            '<div class="detail-list">' +
+            '<div class="detail-row"><span class="detail-key">Endereço</span><span class="detail-val mono">' +
+            escapeHtml(pos.endereco) +
+            '</span></div>' +
+            '<div class="detail-row"><span class="detail-key">Localização</span><span class="detail-val">Rua ' +
+            escapeHtml(pos.rua) +
+            ' · Módulo ' +
+            String(pos.modulo).padStart(2, '0') +
+            ' · Nível ' +
+            pos.nivel +
+            '</span></div>' +
+            '<div class="detail-row"><span class="detail-key">Status</span><span class="detail-val"><span class="status-tag ' +
+            pos.status +
+            '">' +
+            STATUS_LABELS[pos.status] +
+            '</span></span></div>' +
+            '<div class="detail-row"><span class="detail-key">Produto</span><span class="detail-val">' +
+            (pos.status === 'ocupada' ? escapeHtml(pos.produto) : pos.status === 'livre' ? 'Posição vazia' : 'Bloqueada / Manutenção') +
+            '</span></div>' +
+            '<div class="detail-row"><span class="detail-key">SKU</span><span class="detail-val mono">' +
+            (pos.status === 'ocupada' ? escapeHtml(pos.sku) : '—') +
+            '</span></div>' +
+            '<div class="detail-row"><span class="detail-key">Quantidade</span><span class="detail-val mono">' +
+            (pos.status === 'ocupada' ? formatNumber(pos.quantidade) + ' un.' : '0 un.') +
+            '</span></div>' +
+            '</div>' +
+            actionHtml;
+        }
+
+        // =====================================================================
+        // 10. RENDERIZAÇÃO: RECEBIMENTO
+        // =====================================================================
+        function renderRecebimento() {
+          const select = document.getElementById('rec-endereco');
+          const onlyFree = document.getElementById('rec-only-free').checked;
+          const prevSelected = select.value;
+
+          const items = onlyFree ? state.positions.filter((p) => p.status === 'livre') : state.positions;
+          let optionsHtml = '';
+
+          if (items.length === 0) {
+            optionsHtml = '<option value="">Nenhuma posição livre disponível</option>';
+          } else {
+            optionsHtml = '<option value="">Selecione um endereço...</option>';
+            for (const pos of items) {
+              const statusDesc =
+                pos.status === 'livre'
+                  ? 'Livre'
+                  : pos.status === 'ocupada'
+                  ? 'Ocupada (' + pos.sku + ')'
+                  : 'Indisponível';
+              optionsHtml +=
+                '<option value="' +
+                escapeHtml(pos.endereco) +
+                '">' +
+                escapeHtml(pos.endereco) +
+                ' — ' +
+                escapeHtml(statusDesc) +
+                '</option>';
+            }
+          }
+
+          select.innerHTML = optionsHtml;
+          if (prevSelected && positionMap.has(prevSelected)) {
+            const existsInList = Array.from(select.options).some((opt) => opt.value === prevSelected);
+            if (existsInList) select.value = prevSelected;
+          }
+          updateRecebimentoAddressHint();
+
+          // Datalist com SKUs já conhecidos para agilizar digitação consistente
+          const datalist = document.getElementById('sku-datalist');
+          const skuMap = new Map();
+          for (const pos of state.positions) {
+            if (pos.status === 'ocupada' && pos.sku && !skuMap.has(pos.sku)) {
+              skuMap.set(pos.sku, pos.produto);
+            }
+          }
+          let dlHtml = '';
+          skuMap.forEach((prod, sku) => {
+            dlHtml += '<option value="' + escapeHtml(sku) + '">' + escapeHtml(prod) + '</option>';
+          });
+          datalist.innerHTML = dlHtml;
+
+          // Resumo de disponibilidade por rua
+          const m = getMetrics();
+          let rows = '';
+          for (const rua of STREETS) {
+            const st = m.byStreet[rua];
+            rows +=
+              '<tr>' +
+              '<td><strong>Rua ' +
+              rua +
+              '</strong></td>' +
+              '<td class="text-right mono" style="color: var(--status-livre-text); font-weight:600;">' +
+              st.livres +
+              '</td>' +
+              '<td class="text-right mono" style="color: var(--status-ocupada-text);">' +
+              st.ocupadas +
+              '</td>' +
+              '<td class="text-right mono" style="color: var(--status-indisponivel-text);">' +
+              st.indisponiveis +
+              '</td>' +
+              '<td class="text-right mono">' +
+              st.total +
+              '</td>' +
+              '</tr>';
+          }
+          document.getElementById('rec-availability-summary').innerHTML =
+            '<div class="table-wrap"><table><thead><tr>' +
+            '<th>Rua</th><th class="text-right">Livres</th><th class="text-right">Ocupadas</th><th class="text-right">Indisp.</th><th class="text-right">Total</th>' +
+            '</tr></thead><tbody>' +
+            rows +
+            '</tbody></table></div>';
+        }
+
+        function updateRecebimentoAddressHint() {
+          const select = document.getElementById('rec-endereco');
+          const hint = document.getElementById('rec-address-hint');
+          const pos = positionMap.get(select.value);
+          if (!pos) {
+            const freeCount = state.positions.filter((p) => p.status === 'livre').length;
+            hint.textContent = formatNumber(freeCount) + ' posições livres disponíveis no armazém.';
+            hint.style.color = 'var(--text-muted)';
+            return;
+          }
+          if (pos.status === 'livre') {
+            hint.textContent = 'Posição livre e apta para recebimento.';
+            hint.style.color = 'var(--status-livre-text)';
+          } else if (pos.status === 'ocupada') {
+            hint.textContent = 'Atenção: posição ocupada por ' + pos.sku + '. O sistema impedirá o cadastro aqui.';
+            hint.style.color = 'var(--status-ocupada-text)';
+          } else {
+            hint.textContent = 'Atenção: posição indisponível. O sistema impedirá o cadastro aqui.';
+            hint.style.color = 'var(--status-indisponivel-text)';
+          }
+        }
+
+        // =====================================================================
+        // 11. RENDERIZAÇÃO: EXPEDIÇÃO (RETIRADA)
+        // =====================================================================
+        function renderExpedicao() {
+          const listEl = document.getElementById('exp-items-list');
+          const query = uiState.expSearch.trim().toLowerCase();
+
+          const stocked = state.positions.filter((p) => {
+            if (p.status !== 'ocupada') return false;
+            if (!query) return true;
+            return (
+              p.sku.toLowerCase().includes(query) ||
+              p.produto.toLowerCase().includes(query) ||
+              p.endereco.toLowerCase().includes(query)
+            );
+          });
+
+          if (stocked.length === 0) {
+            listEl.innerHTML =
+              '<div class="empty-state">' +
+              '<p class="empty-state-title">Nenhum produto encontrado</p>' +
+              '<p class="empty-state-desc">' +
+              (query ? 'Tente outro termo de SKU, produto ou endereço.' : 'Não há posições ocupadas no estoque no momento.') +
+              '</p>' +
+              '</div>';
+          } else {
+            let html = '';
+            for (const pos of stocked) {
+              const active = uiState.selectedDispatchAddress === pos.endereco;
+              html +=
+                '<button type="button" class="dispatch-item' +
+                (active ? ' active' : '') +
+                '" data-addr="' +
+                escapeHtml(pos.endereco) +
+                '">' +
+                '<div class="dispatch-item-main">' +
+                '<div class="dispatch-item-title">' +
+                escapeHtml(pos.produto) +
+                '</div>' +
+                '<div class="dispatch-item-meta"><span class="mono">' +
+                escapeHtml(pos.sku) +
+                '</span> · <span class="mono">' +
+                escapeHtml(pos.endereco) +
+                '</span></div>' +
+                '</div>' +
+                '<div class="dispatch-item-qty">' +
+                formatNumber(pos.quantidade) +
+                ' un.</div>' +
+                '</button>';
+            }
+            listEl.innerHTML = html;
+          }
+
+          renderExpedicaoForm();
+        }
+
+        function renderExpedicaoForm() {
+          const container = document.getElementById('exp-form-container');
+          const pos = uiState.selectedDispatchAddress ? positionMap.get(uiState.selectedDispatchAddress) : null;
+
+          if (!pos || pos.status !== 'ocupada') {
+            container.innerHTML =
+              '<div class="empty-state">' +
+              '<p class="empty-state-title">Selecione um item ao lado</p>' +
+              '<p class="empty-state-desc">Clique em qualquer posição ocupada para visualizar o saldo disponível e registrar a retirada.</p>' +
+              '</div>';
+            return;
+          }
+
+          container.innerHTML =
+            '<div class="detail-list">' +
+            '<div class="detail-row"><span class="detail-key">Endereço</span><span class="detail-val mono">' +
+            escapeHtml(pos.endereco) +
+            '</span></div>' +
+            '<div class="detail-row"><span class="detail-key">SKU</span><span class="detail-val mono">' +
+            escapeHtml(pos.sku) +
+            '</span></div>' +
+            '<div class="detail-row"><span class="detail-key">Produto</span><span class="detail-val">' +
+            escapeHtml(pos.produto) +
+            '</span></div>' +
+            '<div class="detail-row"><span class="detail-key">Quantidade Disponível</span><span class="detail-val mono" style="color:var(--navy-900); font-size:15px;">' +
+            formatNumber(pos.quantidade) +
+            ' un.</span></div>' +
+            '</div>' +
+            '<form id="form-expedicao" novalidate>' +
+            '<div class="form-grid">' +
+            '<div class="form-group">' +
+            '<label class="form-label" for="exp-qtd">Quantidade a Retirar *</label>' +
+            '<input id="exp-qtd" class="form-control mono" type="number" min="1" max="' +
+            pos.quantidade +
+            '" step="1" value="1" required />' +
+            '<span class="form-hint">Máximo permitido: ' +
+            formatNumber(pos.quantidade) +
+            ' un.</span>' +
+            '</div>' +
+            '<div class="form-group">' +
+            '<label class="form-label" for="exp-motivo">Motivo / Pedido (opcional)</label>' +
+            '<input id="exp-motivo" class="form-control" type="text" placeholder="Ex: Pedido #OP-2045" />' +
+            '</div>' +
+            '</div>' +
+            '<div class="form-actions">' +
+            '<button id="btn-exp-all" class="btn btn-secondary" type="button">Retirar Tudo (' +
+            formatNumber(pos.quantidade) +
+            ')</button>' +
+            '<button class="btn btn-primary" type="submit">Confirmar Retirada</button>' +
+            '</div>' +
+            '</form>';
+
+          const btnAll = document.getElementById('btn-exp-all');
+          if (btnAll) {
+            btnAll.addEventListener('click', function () {
+              const input = document.getElementById('exp-qtd');
+              if (input) input.value = String(pos.quantidade);
+            });
+          }
+
+          const form = document.getElementById('form-expedicao');
+          if (form) {
+            form.addEventListener('submit', function (e) {
+              e.preventDefault();
+              const qtdVal = document.getElementById('exp-qtd').value;
+              const motivoVal = document.getElementById('exp-motivo').value;
+              handleExpedicao(pos.endereco, qtdVal, motivoVal);
+            });
+          }
+        }
+
+        // =====================================================================
+        // 12. RENDERIZAÇÃO: CONSULTA DE ESTOQUE
+        // =====================================================================
+        function renderConsulta() {
+          const query = uiState.consultaSearch.trim().toLowerCase();
+          const street = uiState.consultaStreet;
+          const scope = uiState.consultaScope;
+
+          const filtered = state.positions.filter((pos) => {
+            if (scope === 'ocupada' && pos.status !== 'ocupada') return false;
+            if (street !== 'TODAS' && pos.rua !== street) return false;
+            if (!query) return true;
+            return (
+              pos.endereco.toLowerCase().includes(query) ||
+              (pos.sku && pos.sku.toLowerCase().includes(query)) ||
+              (pos.produto && pos.produto.toLowerCase().includes(query)) ||
+              ('rua ' + pos.rua).toLowerCase().includes(query)
+            );
+          });
+
+          const totalUnits = filtered.reduce((acc, p) => acc + (p.status === 'ocupada' ? p.quantidade : 0), 0);
+          document.getElementById('consulta-counter').textContent =
+            formatNumber(filtered.length) + ' registros · ' + formatNumber(totalUnits) + ' unidades';
+
+          const wrap = document.getElementById('consulta-table-wrap');
+          if (filtered.length === 0) {
+            wrap.innerHTML =
+              '<div class="empty-state"><p class="empty-state-title">Nenhum item encontrado na consulta</p><p class="empty-state-desc">Ajuste os termos de pesquisa ou altere o filtro de escopo.</p></div>';
+            return;
+          }
+
+          let rows = '';
+          for (const pos of filtered) {
+            const actionBtn =
+              pos.status === 'ocupada'
+                ? '<button class="btn btn-secondary btn-sm" type="button" data-action="go-dispatch" data-addr="' +
+                  escapeHtml(pos.endereco) +
+                  '">Expedir</button>'
+                : pos.status === 'livre'
+                ? '<button class="btn btn-secondary btn-sm" type="button" data-action="go-receive" data-addr="' +
+                  escapeHtml(pos.endereco) +
+                  '">Receber</button>'
+                : '<span style="color:var(--text-muted); font-size:12px;">Bloqueada</span>';
+
+            rows +=
+              '<tr>' +
+              '<td class="mono">' +
+              (pos.sku ? escapeHtml(pos.sku) : '—') +
+              '</td>' +
+              '<td>' +
+              (pos.produto ? escapeHtml(pos.produto) : '—') +
+              '</td>' +
+              '<td class="text-right mono">' +
+              (pos.status === 'ocupada' ? formatNumber(pos.quantidade) : '0') +
+              '</td>' +
+              '<td class="mono">Rua ' +
+              escapeHtml(pos.rua) +
+              '</td>' +
+              '<td class="mono">MOD-' +
+              String(pos.modulo).padStart(2, '0') +
+              '</td>' +
+              '<td class="mono">NIVEL-' +
+              pos.nivel +
+              '</td>' +
+              '<td class="mono">' +
+              escapeHtml(pos.endereco) +
+              '</td>' +
+              '<td><span class="status-tag ' +
+              pos.status +
+              '">' +
+              STATUS_LABELS[pos.status] +
+              '</span></td>' +
+              '<td class="text-right">' +
+              actionBtn +
+              '</td>' +
+              '</tr>';
+          }
+
+          wrap.innerHTML =
+            '<div class="table-wrap"><table><thead><tr>' +
+            '<th>SKU</th><th>Produto</th><th class="text-right">Quantidade</th><th>Rua</th><th>Módulo</th><th>Nível</th><th>Endereço Completo</th><th>Status</th><th class="text-right">Ação</th>' +
+            '</tr></thead><tbody>' +
+            rows +
+            '</tbody></table></div>';
+        }
+
+        // =====================================================================
+        // 13. RENDERIZAÇÃO: CONTROLE DE POSIÇÕES
+        // =====================================================================
+        function renderPosicoes() {
+          const query = uiState.posicoesSearch.trim().toLowerCase();
+          const street = uiState.posicoesStreet;
+          const status = uiState.posicoesStatus;
+
+          const filtered = state.positions.filter((pos) => {
+            if (status !== 'todos' && pos.status !== status) return false;
+            if (street !== 'TODAS' && pos.rua !== street) return false;
+            if (!query) return true;
+            return (
+              pos.endereco.toLowerCase().includes(query) ||
+              (pos.sku && pos.sku.toLowerCase().includes(query)) ||
+              (pos.produto && pos.produto.toLowerCase().includes(query))
+            );
+          });
+
+          document.getElementById('posicoes-counter').textContent =
+            formatNumber(filtered.length) + ' de ' + formatNumber(TOTAL_POSITIONS) + ' posições';
+
+          const wrap = document.getElementById('posicoes-table-wrap');
+          if (filtered.length === 0) {
+            wrap.innerHTML =
+              '<div class="empty-state"><p class="empty-state-title">Nenhuma posição corresponde ao filtro</p><p class="empty-state-desc">Limpe o filtro de busca ou selecione outro status.</p></div>';
+            return;
+          }
+
+          let rows = '';
+          for (const pos of filtered) {
+            let actionHtml = '';
+            if (pos.status === 'livre') {
+              actionHtml =
+                '<button class="btn btn-secondary btn-sm" type="button" data-action="toggle-pos" data-addr="' +
+                escapeHtml(pos.endereco) +
+                '">Tornar Indisponível</button>';
+            } else if (pos.status === 'indisponivel') {
+              actionHtml =
+                '<button class="btn btn-primary btn-sm" type="button" data-action="toggle-pos" data-addr="' +
+                escapeHtml(pos.endereco) +
+                '">Reativar Posição</button>';
+            } else {
+              actionHtml =
+                '<button class="btn btn-secondary btn-sm" type="button" data-action="toggle-pos" data-addr="' +
+                escapeHtml(pos.endereco) +
+                '" title="Posição com mercadoria não pode ser bloqueada">Com mercadoria</button>';
+            }
+
+            rows +=
+              '<tr>' +
+              '<td class="mono">' +
+              escapeHtml(pos.endereco) +
+              '</td>' +
+              '<td><span class="status-tag ' +
+              pos.status +
+              '">' +
+              STATUS_LABELS[pos.status] +
+              '</span></td>' +
+              '<td class="mono">' +
+              (pos.sku ? escapeHtml(pos.sku) : '—') +
+              '</td>' +
+              '<td>' +
+              (pos.produto ? escapeHtml(pos.produto) : 'Posição sem mercadoria') +
+              '</td>' +
+              '<td class="text-right mono">' +
+              (pos.status === 'ocupada' ? formatNumber(pos.quantidade) : '0') +
+              '</td>' +
+              '<td class="text-right">' +
+              actionHtml +
+              '</td>' +
+              '</tr>';
+          }
+
+          wrap.innerHTML =
+            '<div class="table-wrap"><table><thead><tr>' +
+            '<th>Endereço</th><th>Status</th><th>SKU</th><th>Conteúdo Atual</th><th class="text-right">Qtd.</th><th class="text-right">Controle</th>' +
+            '</tr></thead><tbody>' +
+            rows +
+            '</tbody></table></div>';
+        }
+
+        // =====================================================================
+        // 14. RENDERIZAÇÃO: HISTÓRICO DE OPERAÇÕES
+        // =====================================================================
+        function renderHistorico() {
+          const query = uiState.historicoSearch.trim().toLowerCase();
+          const typeFilter = uiState.historicoType;
+
+          const filtered = state.history.filter((item) => {
+            if (typeFilter === 'ENTRADA' && item.tipo !== 'ENTRADA') return false;
+            if (typeFilter === 'SAIDA' && item.tipo !== 'SAIDA') return false;
+            if (typeFilter === 'POSICOES' && item.tipo !== 'BLOQUEIO' && item.tipo !== 'REATIVACAO') return false;
+            if (!query) return true;
+            return (
+              (item.sku && item.sku.toLowerCase().includes(query)) ||
+              (item.produto && item.produto.toLowerCase().includes(query)) ||
+              (item.endereco && item.endereco.toLowerCase().includes(query)) ||
+              (item.descricao && item.descricao.toLowerCase().includes(query))
+            );
+          });
+
+          document.getElementById('historico-counter').textContent = formatNumber(filtered.length) + ' operações registradas';
+
+          const wrap = document.getElementById('historico-table-wrap');
+          if (filtered.length === 0) {
+            wrap.innerHTML =
+              '<div class="empty-state"><p class="empty-state-title">Nenhum registro no histórico</p><p class="empty-state-desc">As operações de recebimento, expedição e controle de posições aparecerão aqui.</p></div>';
+            return;
+          }
+
+          let rows = '';
+          for (const item of filtered) {
+            const dt = formatDateParts(item.timestamp);
+            rows +=
+              '<tr>' +
+              '<td class="mono">' +
+              escapeHtml(dt.date) +
+              '</td>' +
+              '<td class="mono">' +
+              escapeHtml(dt.time) +
+              '</td>' +
+              '<td><span class="op-type ' +
+              escapeHtml(item.tipo) +
+              '">' +
+              escapeHtml(OP_LABELS[item.tipo] || item.tipo) +
+              '</span></td>' +
+              '<td>' +
+              escapeHtml(item.produto) +
+              '</td>' +
+              '<td class="mono">' +
+              escapeHtml(item.sku) +
+              '</td>' +
+              '<td class="text-right mono">' +
+              (item.quantidade > 0 ? formatNumber(item.quantidade) : '—') +
+              '</td>' +
+              '<td class="mono">' +
+              escapeHtml(item.endereco) +
+              '</td>' +
+              '<td>' +
+              escapeHtml(item.descricao) +
+              '</td>' +
+              '</tr>';
+          }
+
+          wrap.innerHTML =
+            '<div class="table-wrap"><table><thead><tr>' +
+            '<th>Data</th><th>Horário</th><th>Tipo</th><th>Produto</th><th>SKU</th><th class="text-right">Qtd.</th><th>Endereço</th><th>Descrição</th>' +
+            '</tr></thead><tbody>' +
+            rows +
+            '</tbody></table></div>';
+        }
+
+        // =====================================================================
+        // 15. EXPORTAÇÃO CSV E RENDERIZAÇÃO GLOBAL
+        // =====================================================================
+        function exportInventoryCsv() {
+          const header = ['SKU', 'Produto', 'Quantidade', 'Rua', 'Modulo', 'Nivel', 'Endereco Completo', 'Status'];
+          const lines = [header.join(';')];
+          for (const p of state.positions) {
+            const row = [
+              p.sku || '',
+              '"' + String(p.produto || '').replace(/"/g, '""') + '"',
+              p.status === 'ocupada' ? p.quantidade : 0,
+              'Rua ' + p.rua,
+              'MOD-' + String(p.modulo).padStart(2, '0'),
+              'NIVEL-' + p.nivel,
+              p.endereco,
+              STATUS_LABELS[p.status]
+            ];
+            lines.push(row.join(';'));
+          }
+          const csv = '\uFEFF' + lines.join('\r\n');
+          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'wms-pro-inventario.csv';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showFeedback('success', 'Arquivo CSV do inventário completo (150 posições) exportado.');
+        }
+
+        function renderAll() {
+          renderDashboard();
+          renderMap();
+          renderRecebimento();
+          renderExpedicao();
+          renderConsulta();
+          renderPosicoes();
+          renderHistorico();
+        }
+
+        // =====================================================================
+        // 16. EVENT LISTENERS E INICIALIZAÇÃO
+        // =====================================================================
+        function bindEvents() {
+          // Navegação sidebar
+          document.querySelectorAll('#sidebar-nav .nav-item').forEach((btn) => {
+            btn.addEventListener('click', function () {
+              switchView(btn.dataset.view);
+            });
+          });
+
+          // Mobile menu
+          document.getElementById('mobile-menu-btn').addEventListener('click', openMobileSidebar);
+          document.getElementById('sidebar-close-btn').addEventListener('click', closeMobileSidebar);
+          document.getElementById('sidebar-backdrop').addEventListener('click', closeMobileSidebar);
+
+          // Atalhos do cabeçalho e dashboard
+          document.getElementById('header-quick-receive').addEventListener('click', function () {
+            switchView('recebimento');
+            document.getElementById('rec-sku').focus();
+          });
+          document.getElementById('btn-dash-history').addEventListener('click', function () {
+            switchView('historico');
+          });
+          document.getElementById('btn-dash-export').addEventListener('click', exportInventoryCsv);
+
+          // Modal restaurar demonstração
+          const modal = document.getElementById('confirm-modal');
+          document.getElementById('btn-reset-demo').addEventListener('click', function () {
+            modal.classList.add('open');
+          });
+          document.getElementById('modal-cancel').addEventListener('click', function () {
+            modal.classList.remove('open');
+          });
+          modal.addEventListener('click', function (e) {
+            if (e.target === modal) modal.classList.remove('open');
+          });
+          document.getElementById('modal-confirm').addEventListener('click', function () {
+            state = createDemoState();
+            rebuildIndex();
+            saveState();
+            uiState.selectedMapAddress = 'RUA-A / MOD-01 / NIVEL-1';
+            uiState.selectedDispatchAddress = null;
+            modal.classList.remove('open');
+            renderAll();
+            showFeedback('success', 'Dados de demonstração restaurados com sucesso.');
+          });
+
+          // Mapa: clique nos blocos
+          document.getElementById('map-streets-container').addEventListener('click', function (e) {
+            const cell = e.target.closest('.pos-cell');
+            if (!cell) return;
+            uiState.selectedMapAddress = cell.dataset.addr;
+            renderMap();
+          });
+
+          // Mapa: filtros
+          document.getElementById('map-search').addEventListener('input', function (e) {
+            uiState.mapSearch = e.target.value;
+            renderMap();
+          });
+          document.getElementById('map-street-filter').addEventListener('change', function (e) {
+            uiState.mapStreetFilter = e.target.value;
+            renderMap();
+          });
+          document.getElementById('map-status-filter').addEventListener('click', function (e) {
+            const btn = e.target.closest('.seg-btn');
+            if (!btn) return;
+            uiState.mapStatusFilter = btn.dataset.status;
+            document.querySelectorAll('#map-status-filter .seg-btn').forEach((b) => b.classList.toggle('active', b === btn));
+            renderMap();
+          });
+
+          // Recebimento: formulário
+          document.getElementById('rec-only-free').addEventListener('change', renderRecebimento);
+          document.getElementById('rec-endereco').addEventListener('change', updateRecebimentoAddressHint);
+
+          // Auto-preencher nome do produto quando SKU existente for informado
+          document.getElementById('rec-sku').addEventListener('change', function (e) {
+            const sku = e.target.value.trim().toUpperCase();
+            if (!sku) return;
+            const match = state.positions.find((p) => p.status === 'ocupada' && p.sku === sku);
+            const prodInput = document.getElementById('rec-produto');
+            if (match && !prodInput.value.trim()) {
+              prodInput.value = match.produto;
+            }
+          });
+
+          document.getElementById('btn-suggest-free').addEventListener('click', function () {
+            const free = state.positions.find((p) => p.status === 'livre');
+            if (!free) {
+              showFeedback('warning', 'Não há posições livres disponíveis no momento.');
+              return;
+            }
+            const select = document.getElementById('rec-endereco');
+            select.value = free.endereco;
+            updateRecebimentoAddressHint();
+          });
+
+          document.getElementById('btn-rec-clear').addEventListener('click', function () {
+            document.getElementById('form-recebimento').reset();
+            document.getElementById('rec-only-free').checked = true;
+            renderRecebimento();
+          });
+
+          document.getElementById('form-recebimento').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const sku = document.getElementById('rec-sku').value;
+            const produto = document.getElementById('rec-produto').value;
+            const qtd = document.getElementById('rec-qtd').value;
+            const endereco = document.getElementById('rec-endereco').value;
+            const obs = document.getElementById('rec-obs').value;
+
+            const ok = handleRecebimento(sku, produto, qtd, endereco, obs);
+            if (ok) {
+              document.getElementById('form-recebimento').reset();
+              document.getElementById('rec-only-free').checked = true;
+              renderRecebimento();
+            }
+          });
+
+          // Expedição: pesquisa e seleção
+          document.getElementById('exp-search').addEventListener('input', function (e) {
+            uiState.expSearch = e.target.value;
+            renderExpedicao();
+          });
+
+          document.getElementById('exp-items-list').addEventListener('click', function (e) {
+            const item = e.target.closest('.dispatch-item');
+            if (!item) return;
+            uiState.selectedDispatchAddress = item.dataset.addr;
+            renderExpedicao();
+          });
+
+          // Consulta de estoque
+          document.getElementById('consulta-search').addEventListener('input', function (e) {
+            uiState.consultaSearch = e.target.value;
+            renderConsulta();
+          });
+          document.getElementById('consulta-street').addEventListener('change', function (e) {
+            uiState.consultaStreet = e.target.value;
+            renderConsulta();
+          });
+          document.getElementById('consulta-scope').addEventListener('click', function (e) {
+            const btn = e.target.closest('.seg-btn');
+            if (!btn) return;
+            uiState.consultaScope = btn.dataset.scope;
+            document.querySelectorAll('#consulta-scope .seg-btn').forEach((b) => b.classList.toggle('active', b === btn));
+            renderConsulta();
+          });
+
+          // Controle de posições
+          document.getElementById('posicoes-search').addEventListener('input', function (e) {
+            uiState.posicoesSearch = e.target.value;
+            renderPosicoes();
+          });
+          document.getElementById('posicoes-street').addEventListener('change', function (e) {
+            uiState.posicoesStreet = e.target.value;
+            renderPosicoes();
+          });
+          document.getElementById('posicoes-status-filter').addEventListener('click', function (e) {
+            const btn = e.target.closest('.seg-btn');
+            if (!btn) return;
+            uiState.posicoesStatus = btn.dataset.status;
+            document.querySelectorAll('#posicoes-status-filter .seg-btn').forEach((b) => b.classList.toggle('active', b === btn));
+            renderPosicoes();
+          });
+
+          // Histórico
+          document.getElementById('historico-search').addEventListener('input', function (e) {
+            uiState.historicoSearch = e.target.value;
+            renderHistorico();
+          });
+          document.getElementById('historico-type-filter').addEventListener('click', function (e) {
+            const btn = e.target.closest('.seg-btn');
+            if (!btn) return;
+            uiState.historicoType = btn.dataset.type;
+            document.querySelectorAll('#historico-type-filter .seg-btn').forEach((b) => b.classList.toggle('active', b === btn));
+            renderHistorico();
+          });
+
+          // Delegação global para ações rápidas entre telas (Mapa, Consulta, Controle de Posições)
+          document.querySelector('.main-content').addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            const action = btn.dataset.action;
+            const addr = btn.dataset.addr;
+
+            if (action === 'toggle-pos') {
+              handleTogglePositionStatus(addr);
+            } else if (action === 'go-receive') {
+              switchView('recebimento');
+              document.getElementById('rec-only-free').checked = true;
+              renderRecebimento();
+              const select = document.getElementById('rec-endereco');
+              select.value = addr;
+              updateRecebimentoAddressHint();
+              document.getElementById('rec-sku').focus();
+            } else if (action === 'go-dispatch') {
+              uiState.selectedDispatchAddress = addr;
+              uiState.expSearch = '';
+              document.getElementById('exp-search').value = '';
+              switchView('expedicao');
+              renderExpedicao();
+            }
+          });
+
+          // Redesenhar gráficos ao redimensionar janela
+          let resizeTimer = null;
+          window.addEventListener('resize', function () {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function () {
+              if (uiState.activeView === 'dashboard') {
+                renderDashboardCharts();
+              }
+            }, 120);
+          });
+        }
+
+        function init() {
+          loadState();
+          bindEvents();
+          renderAll();
+          switchView('dashboard');
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+      })();
+    </script>
+  </body>
+</html>

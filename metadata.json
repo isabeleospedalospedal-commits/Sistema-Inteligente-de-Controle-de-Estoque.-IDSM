@@ -1,0 +1,6 @@
+{
+  "name": "WMS PRO – Sistema Inteligente de Controle de Estoque",
+  "description": "Sistema web funcional de gerenciamento de armazém (WMS) com controle de 150 posições, recebimento, expedição, mapa visual e indicadores operacionais.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
